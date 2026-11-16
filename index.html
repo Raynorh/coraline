@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Coraline y el Rescate de los Ratones</title>
+<title>Coraline — Juegos</title>
 <!-- Las fuentes son opcionales: sin internet se usan Georgia / sans-serif automáticamente. -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -29,25 +29,6 @@
   #settings .row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #9b5de533}
   #settings button,#settings label.btn{display:inline-block;padding:7px 16px;border-radius:20px;border:2px solid #9b5de5;background:#2a1346;color:#fff;font:700 13px Quicksand,sans-serif;cursor:pointer;margin:4px 3px}
   #settings .ok{color:#06d6a0}#settings .def{color:#b79cd6}
-
-  #leaderboard{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:#080411f2;color:#f4eaff;overflow:auto}
-  #leaderboard .lb-card{width:100%;max-height:100%;overflow:auto;box-sizing:border-box;padding:18px 14px;border:2px solid #9b5de5;border-radius:18px;background:linear-gradient(160deg,#211033,#0d0818);box-shadow:0 0 28px #9b5de555}
-  #leaderboard h2{font:900 21px 'Cinzel Decorative',Georgia,serif;color:#ffd166;text-align:center;margin:0 0 5px}
-  #leaderboard .lb-sub{text-align:center;color:#bda8d5;font-size:11px;margin:0 0 12px}
-  #leaderboard .lb-tabs{display:flex;gap:5px;margin:10px 0}
-  #leaderboard button{border:1px solid #9b5de5;border-radius:16px;background:#2a1346;color:#fff;padding:8px 6px;font:700 11px 'Quicksand',sans-serif;cursor:pointer}
-  #leaderboard .lb-tabs button{flex:1}
-  #leaderboard .lb-tabs button.active{background:#08745c;border-color:#06d6a0}
-  #leaderboard #lb-status{min-height:28px;text-align:center;color:#bda8d5;font-size:11px;padding:5px 0}
-  #leaderboard ol{list-style:none;padding:0;margin:0}
-  #leaderboard li{display:flex;align-items:center;gap:8px;padding:9px 7px;border-bottom:1px solid #9b5de533;font-size:13px}
-  #leaderboard li .lb-rank{width:25px;color:#ffd166;font-weight:700}
-  #leaderboard li .lb-name{flex:1;overflow-wrap:anywhere}
-  #leaderboard li .lb-score{font-weight:700;color:#06d6a0;white-space:nowrap}
-  #leaderboard .lb-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:11px;color:#bda8d5}
-  #leaderboard .lb-actions button{padding:7px 10px}
-  #leaderboard .lb-close{display:block;width:60%;margin:14px auto 0;padding:10px}
-
 </style>
 </head>
 <body>
@@ -63,26 +44,11 @@
     <button id="snd-reset">Restaurar originales</button>
     <div id="snd-msg" style="margin:6px 0;min-height:18px;color:#ffd166"></div><div id="snd-list"></div>
     <div style="text-align:center"><button id="settings-close">Volver</button></div></div>
-  <div id="leaderboard" aria-hidden="true">
-    <div class="lb-card">
-      <h2>🏆 Récords de Coraline</h2>
-      <p class="lb-sub">Top 10 global · tu mejor puntuación por juego</p>
-      <div class="lb-tabs">
-        <button data-lb-game="bubble">Burbujas</button>
-        <button data-lb-game="tetris">Tetris</button>
-        <button data-lb-game="blocks">Bloques</button>
-      </div>
-      <div id="lb-status" aria-live="polite">Cargando récords…</div>
-      <ol id="lb-list"></ol>
-      <div class="lb-actions"><span id="lb-player"></span><button id="lb-change-name">Cambiar apodo</button></div>
-      <button class="lb-close" id="lb-close">Volver</button>
-    </div>
-  </div>
   <div id="modal">
     <h2>Historia y Personajes</h2>
     <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>6 ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
     <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a los 6 ratoncitos antes de quedarte sin los <b>25 botones</b> de munición.</p>
-    <p><b>Tres modos:</b> Burbujas de Botones, Tetris y Bloques (estilo Block Blast). Elige la dificultad antes de entrar.</p>
+    <p><b>Dos modos:</b> Burbujas de Botones (dispara y rebota) y Botones Tetris (apila piezas, limpia filas y libera a los ratoncitos atrapados abajo). Elige la dificultad antes de entrar.</p>
     <h3>🧒 Coraline Jones</h3>Dispara desde la base. Te da la bienvenida y celebra al liberar a todos.
     <h3>🐈‍⬛ El Gato Negro</h3>Guía mágico. Sostiene el siguiente botón, te avisa cuando quedan 5 tiros y canaliza la Piedra Mágica.
     <h3>🎺 Señor Bobinsky</h3>Celebra cada ratoncito libre: <b>+500 puntos</b>.
@@ -96,10 +62,6 @@
 <script>
 'use strict';
 const VERSION='v0.5.0';
-// Ranking global Supabase: pega aquí la URL del proyecto y la clave anon/public.
-// NUNCA pegues aquí la clave service_role.
-const SUPABASE_URL='PEGA_AQUI_TU_PROJECT_URL';
-const SUPABASE_ANON_KEY='PEGA_AQUI_TU_ANON_PUBLIC_KEY';
 const W=480,H=760,R=24,COLS=9,ROWS=11,ROWH=R*Math.sqrt(3),TOP=60,AMMO0=25,MICE0=6;
 const CX=240,CY=655; // cañón
 const COLORS=[
@@ -240,7 +202,7 @@ function pickColor(){
  const total=choices.reduce((s,o)=>s+o.w,0);if(!total)return ri(5);
  let roll=Math.random()*total;for(const o of choices){roll-=o.w;if(roll<=0)return o.c;}return choices.find(o=>o.w>0).c;
 }
-function startPlay(){scoreRecorded=false;unlock();(mode==='tetris'?tNew():mode==='blocks'?bNew():newGame());state='play';fade=1;setTimeout(()=>playVoice('bienvenida'),350);setMusic('partida');stoneBtn.style.display=mode==='blocks'?'none':'block';updateStoneBtn();}
+function startPlay(){scoreRecorded=false;unlock();(mode==='tetris'?tNew():mode==='blocks'?bNew():newGame());state='play';fade=1;try{if(!localStorage.getItem('cor_welcome_played')){localStorage.setItem('cor_welcome_played','1');setTimeout(()=>playVoice('bienvenida'),350);}}catch(e){setTimeout(()=>playVoice('bienvenida'),350);}setMusic('partida');stoneBtn.style.display=mode==='blocks'?'none':'block';updateStoneBtn();}
 function toMenu(){state='menu';stoneBtn.style.display='none';setMusic('intro');}
 
 /* ================= JUEGO ================= */
@@ -611,47 +573,9 @@ function bEndDrag(){
  bpreview=null;
 }
 
-const LB_GAME_LABELS={bubble:'Burbujas',tetris:'Tetris',blocks:'Bloques'};
-const leaderboard=document.getElementById('leaderboard');
-let lbGame='bubble';
-function cleanNickname(v){return String(v||'').replace(/[<>\u0000-\u001f]/g,'').trim().slice(0,18);}
-function getNickname(){let n='';try{n=cleanNickname(localStorage.getItem('coraline_nickname'));}catch(e){}
- if(!n){try{n=cleanNickname(prompt('Elige tu apodo para el ranking global (máximo 18 caracteres):','Jugador'))||'Jugador';}catch(e){n='Jugador';}
-  try{localStorage.setItem('coraline_nickname',n);}catch(e){}}
- return n;}
-function changeNickname(){let old=getNickname(),n='';try{n=cleanNickname(prompt('Escribe tu nuevo apodo (máximo 18 caracteres):',old));}catch(e){}
- if(!n)return;try{localStorage.setItem('coraline_nickname',n);}catch(e){};document.getElementById('lb-player').textContent='Tu apodo: '+n;}
-function supabaseReady(){return /^https:\/\//.test(SUPABASE_URL)&&!SUPABASE_URL.includes('PEGA_AQUI')&&SUPABASE_ANON_KEY.length>20&&!SUPABASE_ANON_KEY.includes('PEGA_AQUI');}
-async function supabaseRpc(fn,args){if(!supabaseReady())throw new Error('Falta configurar Supabase');
- const res=await fetch(SUPABASE_URL.replace(/\/$/, '')+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify(args)});
- if(!res.ok){let msg='Error de conexión ('+res.status+')';try{const j=await res.json();msg=j.message||j.hint||msg;}catch(e){}throw new Error(msg);}return res.status===204?null:res.json();}
-function saveLocalScore(name,game,value){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}
- const key=name.toLocaleLowerCase('es-CL'),old=list.find(v=>(v.game||({Burbujas:'bubble',Tetris:'tetris',Bloques:'blocks'}[v.mode]))===game&&String(v.name||'').toLocaleLowerCase('es-CL')===key);
- if(old){if(value>Number(old.score||0)){old.score=value;old.date=new Date().toLocaleDateString('es-CL');}}
- else list.push({name,score:value,game,mode:LB_GAME_LABELS[game],date:new Date().toLocaleDateString('es-CL')});
- list.sort((a,b)=>b.score-a.score);try{localStorage.setItem('coraline_scores',JSON.stringify(list.slice(0,100)));}catch(e){} }
-async function recordScore(){if(scoreRecorded)return;scoreRecorded=true;const name=getNickname(),game=mode==='blocks'?'blocks':mode==='tetris'?'tetris':'bubble',value=Math.max(0,Math.floor(Number(score)||0));
- saveLocalScore(name,game,value);
- if(supabaseReady()){try{await supabaseRpc('record_coraline_score',{p_nickname:name,p_game:game,p_score:value});}catch(e){console.warn('No se pudo enviar el récord global:',e);}}
-}
-function localLeaderboard(game){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}
- return list.filter(v=>(v.game||({Burbujas:'bubble',Tetris:'tetris',Bloques:'blocks'}[v.mode]))===game).sort((a,b)=>b.score-a.score).slice(0,10);}
-function escapeLb(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function paintLeaderboard(rows){const list=document.getElementById('lb-list');list.innerHTML='';
- if(!rows||!rows.length){list.innerHTML='<li style="justify-content:center;color:#bda8d5">Aún no hay récords. ¡Sé el primero!</li>';return;}
- rows.forEach((v,i)=>{const li=document.createElement('li');li.innerHTML='<span class="lb-rank">#'+(i+1)+'</span><span class="lb-name">'+escapeLb(v.nickname||v.name||'Jugador')+'</span><span class="lb-score">'+Number(v.score||0).toLocaleString('es-CL')+' pts</span>';list.appendChild(li);});}
-async function loadLeaderboard(game){lbGame=game||lbGame;document.querySelectorAll('[data-lb-game]').forEach(b=>b.classList.toggle('active',b.dataset.lbGame===lbGame));
- const status=document.getElementById('lb-status');status.textContent='Cargando…';paintLeaderboard([]);
- const local=localLeaderboard(lbGame);
- if(supabaseReady()){
-  try{const rows=await supabaseRpc('get_coraline_leaderboard',{p_game:lbGame});paintLeaderboard(Array.isArray(rows)?rows:[]);status.textContent='Ranking global conectado · '+LB_GAME_LABELS[lbGame];}
-  catch(e){paintLeaderboard(local);status.textContent='No se pudo conectar al ranking global. Mostrando récords de este dispositivo. '+e.message;}
- }else{paintLeaderboard(local);status.textContent='Ranking global pendiente de configurar. Por ahora ves los récords de este dispositivo.';}
-}
-function showScores(){leaderboard.style.display='flex';leaderboard.setAttribute('aria-hidden','false');document.getElementById('lb-player').textContent='Tu apodo: '+getNickname();loadLeaderboard(mode==='blocks'?'blocks':mode==='tetris'?'tetris':'bubble');}
-document.querySelectorAll('[data-lb-game]').forEach(b=>b.addEventListener('click',()=>loadLeaderboard(b.dataset.lbGame)));
-document.getElementById('lb-close').addEventListener('click',()=>{leaderboard.style.display='none';leaderboard.setAttribute('aria-hidden','true');});
-document.getElementById('lb-change-name').addEventListener('click',()=>changeNickname());
+function recordScore(){if(scoreRecorded)return;scoreRecorded=true;let name='Jugador';try{name=(prompt('¡Nueva puntuación! Escribe tu nombre:','Jugador')||'Jugador').trim().slice(0,18)||'Jugador';}catch(e){}
+ let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}list.push({name,score:Number(score)||0,mode:mode==='blocks'?'Bloques':mode==='tetris'?'Tetris':'Burbujas',date:new Date().toLocaleDateString('es-CL')});list.sort((a,b)=>b.score-a.score);localStorage.setItem('coraline_scores',JSON.stringify(list.slice(0,20)));}
+function showScores(){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}alert(list.length?('🏆 MEJORES PUNTAJES\\n\\n'+list.slice(0,10).map((v,i)=>(i+1)+'. '+v.name+' — '+v.score+' pts ('+v.mode+')').join('\\n')):'Todavía no hay puntajes guardados. ¡Juega una partida!');}
 /* ================= MODO TETRIS ================= */
 const TC=30,TCOLS=10,TROWS=18,TX=15,TY=64;
 const SHAPES=[[[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],1],[[[1,1],[1,1]],0],[[[0,1,0],[1,1,1],[0,0,0]],2],[[[0,1,1],[1,1,0],[0,0,0]],3],[[[1,1,0],[0,1,1],[0,0,0]],4],[[[1,0,0],[1,1,1],[0,0,0]],5],[[[0,0,1],[1,1,1],[0,0,0]],6]];
@@ -717,7 +641,7 @@ function drawTetris(){drawSky();drawFog(.1);
  txt('RATONCITOS',401,370,'700 12px Quicksand,sans-serif','#b79cd6');
  for(let i=0;i<MICE0;i++){const x=358+(i%3)*43,y=402+Math.floor(i/3)*40;ctx.globalAlpha=i<rescued?1:.25;mouseFace(x,y,13);}ctx.globalAlpha=1;
  txt('Espacio = caída',401,500,'500 11px Quicksand,sans-serif','#8d78a8');txt('🔺 limpia 2 filas',401,518,'500 11px Quicksand,sans-serif','#8d78a8');
- [['◀','tL'],['▶','tR'],['▼','tD'],['⟳','tRot'],['⏬','tHard']].forEach(([l,id],i)=>tBtn(15+i*70,624,62,66,l,id));
+ tBtn(12,624,58,66,'◀','tL');tBtn(410,624,58,66,'▶','tR');tBtn(112,624,54,66,'⟳','tRot');tBtn(184,624,54,66,'▼','tD');tBtn(256,624,66,66,'⏬','tHard');
  parts.forEach(p=>{ctx.globalAlpha=Math.min(1,p.life/20);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s,0,TAU);ctx.fill();});ctx.globalAlpha=1;
  jumpers.forEach(j=>mouseFace(j.x,j.y,12));
  floats.forEach(f=>{ctx.globalAlpha=Math.min(1,f.life/20);txt(f.txt,f.x,f.y,'700 16px Quicksand,sans-serif',f.c);});ctx.globalAlpha=1;
@@ -737,7 +661,7 @@ function frame(){update();hits.length=0;ctx.clearRect(0,0,W,H);
  else{(mode==='tetris'?drawTetris:mode==='blocks'?drawBlocks:drawPlay)();
   if(state==='pause')overlay('Pausa',['La Mamá de Botones espera…'],'#9b5de5',[['Continuar','resume'],['🎼 Música Apple Music','apple'],['Menú principal','menu']]);
   if(state==='win')overlay(mode==='blocks'?'¡Tablero despejado!':'¡Lo logramos!',['Los 6 ratoncitos están a salvo','⭐ '+score+' puntos'],'#ffd166',[['Jugar otra vez','play'],['Menú principal','menu']]);
-  if(state==='lose')overlay(mode==='tetris'?'Torre llena…':mode==='blocks'?'No quedan movimientos':'Sin botones…',['Rescataste '+rescued+' de '+MICE0+' ratoncitos'],'#ff5d8f',[['Intentar de nuevo','play'],['Menú principal','menu']]);}
+  if(state==='lose')overlay(mode==='tetris'?'Torre llena…':mode==='blocks'?'No quedan movimientos':'Sin botones…',mode==='blocks'?['Puntuación: '+score+' puntos']:['Rescataste '+rescued+' de '+MICE0+' ratoncitos'],'#ff5d8f',[['Intentar de nuevo','play'],['Menú principal','menu']]);}
  if(fade>0){ctx.fillStyle='rgba(7,5,14,'+fade+')';ctx.fillRect(0,0,W,H);fade-=.03;}
  ctx.font='700 11px Quicksand,sans-serif';ctx.textAlign='right';ctx.fillStyle='#b79cd6aa';ctx.fillText(VERSION,H>0?W-8:0,H-8);
  requestAnimationFrame(frame);}
@@ -768,6 +692,45 @@ addEventListener('keydown',e=>{if(state==='splash'){enterGame();return;}
   if(k==='Space'&&!e.repeat){tHard();e.preventDefault();return;}}if(e.code==='Space'){e.preventDefault();activateMagic();}
  else if(e.code==='Escape'||e.code==='KeyP'){if(state==='play')act('pause');else if(state==='pause')act('resume');}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='play')act('pause');});
+
+/* ================= CORALINE v0.5.0 — RÉCORDS Y CONTROLES ================= */
+// Configura aquí el proyecto Supabase. La clave anon/public es apta para el navegador
+// cuando las políticas RLS del SQL están activas. Nunca coloques service_role aquí.
+const CORALINE_SUPABASE_URL = '';
+const CORALINE_SUPABASE_ANON_KEY = '';
+const CORALINE_GAME_KEYS = {bubble:'bubble',tetris:'tetris',blocks:'blocks'};
+function coralineNick(){try{return (localStorage.getItem('cor_nickname')||'').trim();}catch(e){return '';}}
+function coralineSetNick(n){n=String(n||'').trim().replace(/[<>]/g,'').slice(0,18);if(!n)n='Jugador';try{localStorage.setItem('cor_nickname',n);}catch(e){}return n;}
+function coralineGameLabel(k){return k==='blocks'?'Bloques':k==='tetris'?'Tetris':'Burbujas';}
+function coralineLocalScores(){try{return JSON.parse(localStorage.getItem('coraline_scores_v050')||'{}');}catch(e){return {};}}
+function coralineStoreLocal(n,k,v){const all=coralineLocalScores();all[k]=all[k]||{};const old=all[k][n]||0;if(v>old)all[k][n]=v;try{localStorage.setItem('coraline_scores_v050',JSON.stringify(all));}catch(e){}return Math.max(old,v);}
+async function coralineCloudRecord(n,k,v){if(!CORALINE_SUPABASE_URL||!CORALINE_SUPABASE_ANON_KEY)return false;try{const r=await fetch(CORALINE_SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/rpc/record_coraline_score',{method:'POST',headers:{'Content-Type':'application/json','apikey':CORALINE_SUPABASE_ANON_KEY,'Authorization':'Bearer '+CORALINE_SUPABASE_ANON_KEY},body:JSON.stringify({p_nickname:n,p_game:k,p_score:v})});return r.ok;}catch(e){return false;}}
+async function coralineCloudTop(k){if(!CORALINE_SUPABASE_URL||!CORALINE_SUPABASE_ANON_KEY)return null;try{const r=await fetch(CORALINE_SUPABASE_URL.replace(/\/$/,'')+'/rest/v1/rpc/get_coraline_leaderboard',{method:'POST',headers:{'Content-Type':'application/json','apikey':CORALINE_SUPABASE_ANON_KEY,'Authorization':'Bearer '+CORALINE_SUPABASE_ANON_KEY},body:JSON.stringify({p_game:k})});if(!r.ok)return null;return await r.json();}catch(e){return null;}}
+function coralineBest(k){const n=coralineNick();const a=coralineLocalScores();return n&&a[k]?Number(a[k][n]||0):0;}
+function recordScore(){if(scoreRecorded)return;scoreRecorded=true;let n=coralineNick();if(!n){try{n=coralineSetNick(prompt('Elige tu apodo (se guardará para tus próximas partidas):','Jugador'));}catch(e){n=coralineSetNick('Jugador');}}const k=CORALINE_GAME_KEYS[mode]||'bubble',v=Math.max(0,Math.floor(Number(score)||0));coralineStoreLocal(n,k,v);coralineCloudRecord(n,k,v);}
+async function showScores(){const names=['bubble','tetris','blocks'];let out='🏆 RÉCORDS POR JUEGO\nApodo: '+(coralineNick()||'Sin configurar')+'\n';for(const k of names){let rows=await coralineCloudTop(k);if(!rows){const all=coralineLocalScores()[k]||{};rows=Object.entries(all).map(([nickname,score])=>({nickname,score})).sort((a,b)=>b.score-a.score).slice(0,10);}out+='\n'+coralineGameLabel(k).toUpperCase()+'\n'+(rows.length?rows.slice(0,10).map((x,i)=>(i+1)+'. '+x.nickname+' — '+Number(x.score).toLocaleString('es-CL')+' pts').join('\n'):'Todavía no hay récords.');}alert(out);}
+// En Bloques el dedo no tapa la pieza: la posición lógica del puntero se eleva 82 px.
+function pos(e){const r=cv.getBoundingClientRect();mouseX=(e.clientX-r.left)*W/r.width;mouseY=(e.clientY-r.top)*H/r.height;if(state==='play'&&mode==='blocks'&&bdragging)mouseY=Math.max(0,mouseY-82);let a=Math.atan2(mouseY-CY,mouseX-CX);if(a>0)a=a<Math.PI/2?-.22:-Math.PI+.22;aim=Math.max(-Math.PI+.22,Math.min(-.22,a));}
+function bBoardOriginAtPointer(){if(bselected<0||!bpieces[bselected])return null;const p=bpieces[bselected],bb=bPieceBounds(p);if(mouseX<BX-BC*BS*.12||mouseX>BX+BC*BS+BC*BS*.12||mouseY<BY-BC*BS*.12||mouseY>BY+BC*BS+BC*BS*.12)return null;const cellCol=Math.floor((mouseX-BX)/BS),cellRow=Math.floor((mouseY-BY)/BS);return{col:cellCol-Math.floor((bb.w-1)/2),row:cellRow-Math.floor((bb.h-1)/2)};}
+function bUpdatePreview(){const at=bBoardOriginAtPointer();if(!at){bpreview=null;return;}const p=bpieces[bselected];if(!p){bpreview=null;return;}const valid=bCan(p,at.col,at.row);const temp=bgrid.map(r=>r.slice());p.cells.forEach(([dx,dy])=>{if(at.col+dx>=0&&at.col+dx<BC&&at.row+dy>=0&&at.row+dy<BC)temp[at.row+dy][at.col+dx]=p.color;});const rows=[],cols=[];for(let r=0;r<BC;r++)if(temp[r].every(v=>v!==-1))rows.push(r);for(let c=0;c<BC;c++)if(temp.every(row=>row[c]!==-1))cols.push(c);bpreview={col:at.col,row:at.row,valid,rows,cols};}
+// Reemplaza solo el texto de instrucciones del modo bloques y destaca filas/columnas que caerían.
+const coralineOriginalDrawBlocks=drawBlocks;
+drawBlocks=function(){coralineOriginalDrawBlocks();if(bpreview&&bpreview.valid){ctx.save();ctx.lineWidth=4;ctx.strokeStyle='#ffd166';bpreview.rows.forEach(r=>{ctx.strokeRect(BX+2,BY+r*BS+2,BC*BS-4,BS-4);});bpreview.cols.forEach(c=>{ctx.strokeRect(BX+c*BS+2,BY+2,BS-4,BC*BS-4);});ctx.restore();if(bpreview.rows.length||bpreview.cols.length)txt('SE LIMPIAN '+bpreview.rows.length+' FILAS · '+bpreview.cols.length+' COLUMNAS',240,510,'900 12px Quicksand,sans-serif','#ffd166');}
+ if(bdragging&&bselected>=0&&bpieces[bselected]){const p=bpieces[bselected],bb=bPieceBounds(p),ox=mouseX-bb.w*BS/2,oy=mouseY-bb.h*BS/2;ctx.save();ctx.globalAlpha=.96;ctx.shadowColor='#06d6a0';ctx.shadowBlur=18;p.cells.forEach(([dx,dy])=>bDrawButtonCell(ox+(dx+.5)*BS,oy+(dy+.5)*BS,p.color,1,.95));ctx.restore();}
+ // El juego de bloques no tiene rescates ni ratones: récord y objetivo propios.
+ txt('RÉCORD '+coralineBest('blocks').toLocaleString('es-CL')+' · '+(coralineNick()||'Apodo pendiente'),240,704,'700 10px Quicksand,sans-serif','#cdb6ea');};
+// Mejor distribución de botones: los laterales quedan en los extremos y las acciones al centro.
+const coralineOriginalDrawTetris=drawTetris;
+drawTetris=function(){coralineOriginalDrawTetris();txt('RÉCORD '+coralineBest('tetris').toLocaleString('es-CL'),401,554,'700 10px Quicksand,sans-serif','#ffd166','center');};
+const coralineTBtn=tBtn;
+tBtn=function(x,y,w,h,label,id){const layout={tL:[12,624,58,66],tR:[410,624,58,66],tRot:[112,624,54,66],tD:[184,624,54,66],tHard:[256,624,66,66]};const a=layout[id]||[x,y,w,h];coralineTBtn(a[0],a[1],a[2],a[3],label,id);};
+// HUD de récord individual, manteniendo los indicadores originales de cada modo.
+const coralineDrawHUD=drawHUD;
+drawHUD=function(){coralineDrawHUD();const k=CORALINE_GAME_KEYS[mode]||'bubble';txt('RÉCORD '+coralineBest(k).toLocaleString('es-CL'),240,57,'700 10px Quicksand,sans-serif','#ffd166','center');};
+// El menú de selección ya no promete rescates para el modo Bloques.
+const coralineOldActNew=actNew;
+actNew=function(id){if(id==='mbl'){mode='blocks';saveSel();return true;}return coralineOldActNew(id);};
+
 requestAnimationFrame(frame);
 </script>
 </body>
