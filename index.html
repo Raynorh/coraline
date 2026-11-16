@@ -29,6 +29,25 @@
   #settings .row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #9b5de533}
   #settings button,#settings label.btn{display:inline-block;padding:7px 16px;border-radius:20px;border:2px solid #9b5de5;background:#2a1346;color:#fff;font:700 13px Quicksand,sans-serif;cursor:pointer;margin:4px 3px}
   #settings .ok{color:#06d6a0}#settings .def{color:#b79cd6}
+
+  #leaderboard{position:absolute;inset:0;z-index:10;display:none;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;background:#080411f2;color:#f4eaff;overflow:auto}
+  #leaderboard .lb-card{width:100%;max-height:100%;overflow:auto;box-sizing:border-box;padding:18px 14px;border:2px solid #9b5de5;border-radius:18px;background:linear-gradient(160deg,#211033,#0d0818);box-shadow:0 0 28px #9b5de555}
+  #leaderboard h2{font:900 21px 'Cinzel Decorative',Georgia,serif;color:#ffd166;text-align:center;margin:0 0 5px}
+  #leaderboard .lb-sub{text-align:center;color:#bda8d5;font-size:11px;margin:0 0 12px}
+  #leaderboard .lb-tabs{display:flex;gap:5px;margin:10px 0}
+  #leaderboard button{border:1px solid #9b5de5;border-radius:16px;background:#2a1346;color:#fff;padding:8px 6px;font:700 11px 'Quicksand',sans-serif;cursor:pointer}
+  #leaderboard .lb-tabs button{flex:1}
+  #leaderboard .lb-tabs button.active{background:#08745c;border-color:#06d6a0}
+  #leaderboard #lb-status{min-height:28px;text-align:center;color:#bda8d5;font-size:11px;padding:5px 0}
+  #leaderboard ol{list-style:none;padding:0;margin:0}
+  #leaderboard li{display:flex;align-items:center;gap:8px;padding:9px 7px;border-bottom:1px solid #9b5de533;font-size:13px}
+  #leaderboard li .lb-rank{width:25px;color:#ffd166;font-weight:700}
+  #leaderboard li .lb-name{flex:1;overflow-wrap:anywhere}
+  #leaderboard li .lb-score{font-weight:700;color:#06d6a0;white-space:nowrap}
+  #leaderboard .lb-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:11px;color:#bda8d5}
+  #leaderboard .lb-actions button{padding:7px 10px}
+  #leaderboard .lb-close{display:block;width:60%;margin:14px auto 0;padding:10px}
+
 </style>
 </head>
 <body>
@@ -44,11 +63,26 @@
     <button id="snd-reset">Restaurar originales</button>
     <div id="snd-msg" style="margin:6px 0;min-height:18px;color:#ffd166"></div><div id="snd-list"></div>
     <div style="text-align:center"><button id="settings-close">Volver</button></div></div>
+  <div id="leaderboard" aria-hidden="true">
+    <div class="lb-card">
+      <h2>🏆 Récords de Coraline</h2>
+      <p class="lb-sub">Top 10 global · tu mejor puntuación por juego</p>
+      <div class="lb-tabs">
+        <button data-lb-game="bubble">Burbujas</button>
+        <button data-lb-game="tetris">Tetris</button>
+        <button data-lb-game="blocks">Bloques</button>
+      </div>
+      <div id="lb-status" aria-live="polite">Cargando récords…</div>
+      <ol id="lb-list"></ol>
+      <div class="lb-actions"><span id="lb-player"></span><button id="lb-change-name">Cambiar apodo</button></div>
+      <button class="lb-close" id="lb-close">Volver</button>
+    </div>
+  </div>
   <div id="modal">
     <h2>Historia y Personajes</h2>
     <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>6 ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
     <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a los 6 ratoncitos antes de quedarte sin los <b>25 botones</b> de munición.</p>
-    <p><b>Dos modos:</b> Burbujas de Botones (dispara y rebota) y Botones Tetris (apila piezas, limpia filas y libera a los ratoncitos atrapados abajo). Elige la dificultad antes de entrar.</p>
+    <p><b>Tres modos:</b> Burbujas de Botones, Tetris y Bloques (estilo Block Blast). Elige la dificultad antes de entrar.</p>
     <h3>🧒 Coraline Jones</h3>Dispara desde la base. Te da la bienvenida y celebra al liberar a todos.
     <h3>🐈‍⬛ El Gato Negro</h3>Guía mágico. Sostiene el siguiente botón, te avisa cuando quedan 5 tiros y canaliza la Piedra Mágica.
     <h3>🎺 Señor Bobinsky</h3>Celebra cada ratoncito libre: <b>+500 puntos</b>.
@@ -61,7 +95,11 @@
 
 <script>
 'use strict';
-const VERSION='v0.4.4';
+const VERSION='v0.5.0';
+// Ranking global Supabase: pega aquí la URL del proyecto y la clave anon/public.
+// NUNCA pegues aquí la clave service_role.
+const SUPABASE_URL='PEGA_AQUI_TU_PROJECT_URL';
+const SUPABASE_ANON_KEY='PEGA_AQUI_TU_ANON_PUBLIC_KEY';
 const W=480,H=760,R=24,COLS=9,ROWS=11,ROWH=R*Math.sqrt(3),TOP=60,AMMO0=25,MICE0=6;
 const CX=240,CY=655; // cañón
 const COLORS=[
@@ -573,9 +611,47 @@ function bEndDrag(){
  bpreview=null;
 }
 
-function recordScore(){if(scoreRecorded)return;scoreRecorded=true;let name='Jugador';try{name=(prompt('¡Nueva puntuación! Escribe tu nombre:','Jugador')||'Jugador').trim().slice(0,18)||'Jugador';}catch(e){}
- let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}list.push({name,score:Number(score)||0,mode:mode==='blocks'?'Bloques':mode==='tetris'?'Tetris':'Burbujas',date:new Date().toLocaleDateString('es-CL')});list.sort((a,b)=>b.score-a.score);localStorage.setItem('coraline_scores',JSON.stringify(list.slice(0,20)));}
-function showScores(){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}alert(list.length?('🏆 MEJORES PUNTAJES\\n\\n'+list.slice(0,10).map((v,i)=>(i+1)+'. '+v.name+' — '+v.score+' pts ('+v.mode+')').join('\\n')):'Todavía no hay puntajes guardados. ¡Juega una partida!');}
+const LB_GAME_LABELS={bubble:'Burbujas',tetris:'Tetris',blocks:'Bloques'};
+const leaderboard=document.getElementById('leaderboard');
+let lbGame='bubble';
+function cleanNickname(v){return String(v||'').replace(/[<>\u0000-\u001f]/g,'').trim().slice(0,18);}
+function getNickname(){let n='';try{n=cleanNickname(localStorage.getItem('coraline_nickname'));}catch(e){}
+ if(!n){try{n=cleanNickname(prompt('Elige tu apodo para el ranking global (máximo 18 caracteres):','Jugador'))||'Jugador';}catch(e){n='Jugador';}
+  try{localStorage.setItem('coraline_nickname',n);}catch(e){}}
+ return n;}
+function changeNickname(){let old=getNickname(),n='';try{n=cleanNickname(prompt('Escribe tu nuevo apodo (máximo 18 caracteres):',old));}catch(e){}
+ if(!n)return;try{localStorage.setItem('coraline_nickname',n);}catch(e){};document.getElementById('lb-player').textContent='Tu apodo: '+n;}
+function supabaseReady(){return /^https:\/\//.test(SUPABASE_URL)&&!SUPABASE_URL.includes('PEGA_AQUI')&&SUPABASE_ANON_KEY.length>20&&!SUPABASE_ANON_KEY.includes('PEGA_AQUI');}
+async function supabaseRpc(fn,args){if(!supabaseReady())throw new Error('Falta configurar Supabase');
+ const res=await fetch(SUPABASE_URL.replace(/\/$/, '')+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify(args)});
+ if(!res.ok){let msg='Error de conexión ('+res.status+')';try{const j=await res.json();msg=j.message||j.hint||msg;}catch(e){}throw new Error(msg);}return res.status===204?null:res.json();}
+function saveLocalScore(name,game,value){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}
+ const key=name.toLocaleLowerCase('es-CL'),old=list.find(v=>(v.game||({Burbujas:'bubble',Tetris:'tetris',Bloques:'blocks'}[v.mode]))===game&&String(v.name||'').toLocaleLowerCase('es-CL')===key);
+ if(old){if(value>Number(old.score||0)){old.score=value;old.date=new Date().toLocaleDateString('es-CL');}}
+ else list.push({name,score:value,game,mode:LB_GAME_LABELS[game],date:new Date().toLocaleDateString('es-CL')});
+ list.sort((a,b)=>b.score-a.score);try{localStorage.setItem('coraline_scores',JSON.stringify(list.slice(0,100)));}catch(e){} }
+async function recordScore(){if(scoreRecorded)return;scoreRecorded=true;const name=getNickname(),game=mode==='blocks'?'blocks':mode==='tetris'?'tetris':'bubble',value=Math.max(0,Math.floor(Number(score)||0));
+ saveLocalScore(name,game,value);
+ if(supabaseReady()){try{await supabaseRpc('record_coraline_score',{p_nickname:name,p_game:game,p_score:value});}catch(e){console.warn('No se pudo enviar el récord global:',e);}}
+}
+function localLeaderboard(game){let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){}
+ return list.filter(v=>(v.game||({Burbujas:'bubble',Tetris:'tetris',Bloques:'blocks'}[v.mode]))===game).sort((a,b)=>b.score-a.score).slice(0,10);}
+function escapeLb(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function paintLeaderboard(rows){const list=document.getElementById('lb-list');list.innerHTML='';
+ if(!rows||!rows.length){list.innerHTML='<li style="justify-content:center;color:#bda8d5">Aún no hay récords. ¡Sé el primero!</li>';return;}
+ rows.forEach((v,i)=>{const li=document.createElement('li');li.innerHTML='<span class="lb-rank">#'+(i+1)+'</span><span class="lb-name">'+escapeLb(v.nickname||v.name||'Jugador')+'</span><span class="lb-score">'+Number(v.score||0).toLocaleString('es-CL')+' pts</span>';list.appendChild(li);});}
+async function loadLeaderboard(game){lbGame=game||lbGame;document.querySelectorAll('[data-lb-game]').forEach(b=>b.classList.toggle('active',b.dataset.lbGame===lbGame));
+ const status=document.getElementById('lb-status');status.textContent='Cargando…';paintLeaderboard([]);
+ const local=localLeaderboard(lbGame);
+ if(supabaseReady()){
+  try{const rows=await supabaseRpc('get_coraline_leaderboard',{p_game:lbGame});paintLeaderboard(Array.isArray(rows)?rows:[]);status.textContent='Ranking global conectado · '+LB_GAME_LABELS[lbGame];}
+  catch(e){paintLeaderboard(local);status.textContent='No se pudo conectar al ranking global. Mostrando récords de este dispositivo. '+e.message;}
+ }else{paintLeaderboard(local);status.textContent='Ranking global pendiente de configurar. Por ahora ves los récords de este dispositivo.';}
+}
+function showScores(){leaderboard.style.display='flex';leaderboard.setAttribute('aria-hidden','false');document.getElementById('lb-player').textContent='Tu apodo: '+getNickname();loadLeaderboard(mode==='blocks'?'blocks':mode==='tetris'?'tetris':'bubble');}
+document.querySelectorAll('[data-lb-game]').forEach(b=>b.addEventListener('click',()=>loadLeaderboard(b.dataset.lbGame)));
+document.getElementById('lb-close').addEventListener('click',()=>{leaderboard.style.display='none';leaderboard.setAttribute('aria-hidden','true');});
+document.getElementById('lb-change-name').addEventListener('click',()=>changeNickname());
 /* ================= MODO TETRIS ================= */
 const TC=30,TCOLS=10,TROWS=18,TX=15,TY=64;
 const SHAPES=[[[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],1],[[[1,1],[1,1]],0],[[[0,1,0],[1,1,1],[0,0,0]],2],[[[0,1,1],[1,1,0],[0,0,0]],3],[[[1,1,0],[0,1,1],[0,0,0]],4],[[[1,0,0],[1,1,1],[0,0,0]],5],[[[0,0,1],[1,1,1],[0,0,0]],6]];
