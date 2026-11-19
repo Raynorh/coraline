@@ -1,0 +1,4 @@
+* text=auto eol=lf
+*.mp3 binary
+original/** -text
+tools/patch-v0.7.0.js -text
