@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Coraline y el Rescate de los Ratones</title>
+<!-- Las fuentes son opcionales: sin internet se usan Georgia / sans-serif automáticamente. -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>{{STYLE}}</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c" width="480" height="760"></canvas>
+  <button id="magic-stone-btn" title="Piedra Mágica: colocar un botón donde quieras (Espacio)">🔺<span class="ring"></span></button>
+  <button id="bomb-btn" title="Explosión (tecla B)">💥<span class="ring"></span></button>
+  <div id="music-drawer"><div id="music-title"></div>
+    <iframe id="music-frame" allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"></iframe>
+    <button id="music-hide">Ocultar</button><button id="music-off">Quitar Apple Music</button></div>
+  <div id="settings"><h2>Configuración</h2>
+    <p style="margin:0 0 6px">Carga tu <b>.zip de sonidos</b> (o varios .mp3 sueltos). Los nombres deben ser:<br><b>bienvenida, victoria, peligro, poder, intro, partida, pausa</b> (.mp3). Se guardan en este navegador.</p>
+    <label class="btn">📦 Cargar .zip / .mp3<input id="snd-file" type="file" accept=".zip,.mp3,audio/*" multiple style="display:none"></label>
+    <button id="snd-reset">Restaurar originales</button>
+    <div id="snd-msg" style="margin:6px 0;min-height:18px;color:#ffd166"></div><div id="snd-list"></div>
+    <div style="text-align:center"><button id="settings-close">Volver</button></div></div>
+  <div id="modal">
+    <h2>Historia y Personajes</h2>
+    <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>6 ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
+    <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a los 6 ratoncitos antes de quedarte sin los <b>25 botones</b> de munición.</p>
+    <p><b>Seis juegos:</b> Burbujas, Tetris, Bloques, Snake, Aventura y Corredor. Elige la dificultad antes de entrar. En Bloques puedes usar botones redondos o cuadrados.</p>
+    <h3>🧒 Coraline Jones</h3>Dispara desde la base. Te da la bienvenida y celebra al liberar a todos.
+    <h3>🐈‍⬛ El Gato Negro</h3>Guía mágico. Sostiene el siguiente botón, te avisa cuando quedan 5 tiros y canaliza la Piedra Mágica.
+    <h3>🎺 Señor Bobinsky</h3>Celebra cada ratoncito libre: <b>+500 puntos</b>.
+    <h3>🔦 Wybie Lovat</h3>Vigilante de las sombras del Palacio Rosa. (Ayudará en futuras versiones.)
+    <h3>🪡 Mamá de Botones</h3>La villana: la Otra Madre del Otro Mundo. Tejedora de la red. (En el futuro sus manos de agujas empujarán el tablero.)
+    <h3>🔺 Piedra Mágica</h3>Se carga con cada botón destruido. Al 100% pulsa el botón verde o <b>Espacio</b> y toca una casilla vacía: el botón se coloca ahí. El Gato también puede intercambiar el botón actual con el siguiente. En <b>Tetris Rescate</b> la piedra es difícil de cargar (rescatar ratoncitos y limpiar líneas); al usarla, los botones que están sobre huecos caen y los rellenan.
+    <button id="modal-close">Volver</button>
+  </div>
+  <div id="profiles">
+    <h2>Jugadores</h2>
+    <p id="profile-hint">Cada perfil tiene su propia identidad. El apodo solo se muestra: dos jugadores pueden llamarse igual y seguir siendo distintos. El saludo se escucha una vez por perfil.</p>
+    <div id="profile-list"></div>
+    <input id="profile-name" maxlength="18" placeholder="Apodo" autocomplete="off">
+    <button id="profile-create" type="button">Crear perfil</button>
+    <button id="profile-close" type="button">Volver</button>
+  </div>
+  <div id="scores-panel">
+    <h2>Mejores puntajes</h2>
+    <div id="scores-tabs"></div><div id="scores-modes"></div>
+    <div id="scores-body"></div>
+    <button id="scores-close" type="button">Volver</button>
+  </div>
+  <div id="config">
+    <h2>Configuración</h2>
+    <div class="cfg-row"><span>🎵 Ambiente sonoro</span><button id="cfg-mute" class="chip" type="button">🔊 Activado</button></div>
+    <div class="cfg-row"><span>Música</span><input type="range" id="vol-music" min="0" max="100"><b id="vol-music-n"></b></div>
+    <div class="cfg-row"><span>Voces</span><input type="range" id="vol-voice" min="0" max="100"><b id="vol-voice-n"></b></div>
+    <div class="cfg-row"><span>Efectos</span><input type="range" id="vol-sfx" min="0" max="100"><b id="vol-sfx-n"></b></div>
+    <button id="cfg-apple" type="button">🎼 Reproducir con Apple Music</button>
+    <button id="cfg-sounds" type="button">📦 Sonidos personalizados (.zip / .mp3)</button>
+    <button id="config-close" type="button">Volver</button>
+  </div>
+  <div id="profile-view">
+    <h2>Perfil</h2>
+    <div id="pv-body"></div>
+    <button id="pv-special" type="button">💛 Este es el perfil de Carolina</button>
+    <button id="pv-switch" type="button">Cambiar de jugador / crear perfil</button>
+    <button id="pv-close" type="button">Volver</button>
+  </div>
+</div>
+
+<script>{{SCRIPT}}</script>
+</body>
+</html>

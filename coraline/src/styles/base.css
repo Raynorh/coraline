@@ -1,0 +1,43 @@
+
+  html,body{margin:0;height:100%;background:#07050e;overflow:hidden;font-family:'Quicksand',system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:none;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+  #stage{position:absolute;width:480px;height:760px;transform-origin:top left;box-shadow:0 0 60px #6b2d9a55;border-radius:6px;overflow:hidden}
+  canvas{display:block;width:480px;height:760px;cursor:crosshair}
+  #magic-stone-btn{position:absolute;left:402px;top:548px;width:62px;height:62px;border-radius:50%;border:3px solid #047857;background:radial-gradient(circle at 35% 30%,#1b4d3e,#0b231c);color:#7fe9c4;font-size:26px;cursor:pointer;display:none;padding:0;transition:transform .15s}
+  #bomb-btn{position:absolute;left:16px;top:548px;width:62px;height:62px;border-radius:50%;border:3px solid #9a4a0b;background:radial-gradient(circle at 35% 30%,#4d2a1b,#231108);color:#ffb26b;font-size:26px;cursor:pointer;display:none;padding:0;transition:transform .15s}
+  #bomb-btn .ring{position:absolute;inset:-7px;border-radius:50%;pointer-events:none}
+  #bomb-btn.ready{border-color:#ff9f43;background:radial-gradient(circle at 35% 30%,#ffb26b,#c2410c);color:#fff;animation:glowb 1.1s infinite alternate}
+  #bomb-btn.armed{background:radial-gradient(circle at 35% 30%,#fff,#ff9f43);animation:glowb .4s infinite alternate}
+  @keyframes glowb{from{box-shadow:0 0 8px #ff9f43}to{box-shadow:0 0 26px 8px #ff9f43}}
+  #magic-stone-btn .ring{position:absolute;inset:-7px;border-radius:50%;pointer-events:none}
+  #magic-stone-btn.ready{border-color:#06d6a0;background:radial-gradient(circle at 35% 30%,#0fe0aa,#047857);color:#fff;animation:glow 1.1s infinite alternate}
+  #magic-stone-btn.armed{background:radial-gradient(circle at 35% 30%,#fff,#06d6a0);animation:glow .4s infinite alternate}
+  @keyframes glow{from{box-shadow:0 0 8px #06d6a0}to{box-shadow:0 0 26px 8px #06d6a0}}
+  #modal{position:absolute;inset:0;background:#0a0612ee;display:none;padding:26px 24px;box-sizing:border-box;overflow-y:auto;color:#e9ddf7;line-height:1.45;font-size:14px}
+  #modal h2{font-family:'Cinzel Decorative',Georgia,serif;color:#ffd166;margin:0 0 8px;font-size:22px;text-align:center}
+  #modal h3{margin:14px 0 4px;color:#06d6a0;font-size:15px}
+  #modal b{color:#ff9ec0}
+  #modal button{display:block;margin:18px auto 4px;padding:10px 26px;border-radius:24px;border:2px solid #9b5de5;background:#2a1346;color:#fff;font:700 15px 'Quicksand',sans-serif;cursor:pointer}
+  #music-drawer{position:absolute;left:0;right:0;bottom:0;background:#0a0612f5;border-top:2px solid #9b5de5;padding:8px 10px 10px;box-sizing:border-box;transform:translateY(105%);transition:transform .25s;z-index:5;color:#e9ddf7;font-size:12px;text-align:center}
+  #music-drawer.open{transform:none}
+  #music-drawer iframe{width:100%;height:175px;border:0;border-radius:10px;display:block;margin:6px 0}
+  #music-drawer button{padding:6px 14px;margin:0 4px;border-radius:16px;border:1.5px solid #9b5de5;background:#2a1346;color:#fff;font:700 12px Quicksand,sans-serif;cursor:pointer}
+  #settings{position:absolute;inset:0;background:#0a0612f2;display:none;padding:26px 24px;box-sizing:border-box;overflow-y:auto;color:#e9ddf7;font-size:14px;line-height:1.45;z-index:6}
+  #settings h2{font-family:'Cinzel Decorative',Georgia,serif;color:#ffd166;margin:0 0 8px;font-size:22px;text-align:center}
+  #settings .row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #9b5de533}
+  #settings button,#settings label.btn{display:inline-block;padding:7px 16px;border-radius:20px;border:2px solid #9b5de5;background:#2a1346;color:#fff;font:700 13px Quicksand,sans-serif;cursor:pointer;margin:4px 3px}
+  #settings .ok{color:#06d6a0}#settings .def{color:#b79cd6}
+  #profiles,#scores-panel,#config,#profile-view{position:absolute;inset:0;background:#0a0612f2;display:none;padding:22px 18px;box-sizing:border-box;overflow-y:auto;color:#e9ddf7;z-index:7;font-size:14px;line-height:1.4}
+  #profiles h2,#scores-panel h2,#config h2,#profile-view h2{font-family:'Cinzel Decorative',Georgia,serif;color:#ffd166;margin:0 0 8px;font-size:22px;text-align:center}
+  #profiles input{display:block;width:100%;box-sizing:border-box;margin:10px 0;padding:10px 12px;border-radius:12px;border:2px solid #9b5de5;background:#1c0d30;color:#fff;font:700 15px Quicksand,sans-serif}
+  #profiles button,#scores-panel button,#profile-list button,#config button,#profile-view button{display:block;width:100%;margin:8px 0;padding:10px 12px;border-radius:16px;border:2px solid #9b5de5;background:#2a1346;color:#fff;font:700 14px Quicksand,sans-serif;cursor:pointer}
+  #profile-list button.on{border-color:#06d6a0}
+
+  #profiles .chip,#scores-panel .chip,#config .chip,#profile-view .chip{display:inline-block;width:auto;margin:3px;padding:6px 12px;border-radius:14px;font-size:13px}
+  #scores-panel .chip.on{border-color:#06d6a0;background:#06705a}
+  .cfg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #9b5de533}
+  .cfg-row input[type=range]{flex:1;accent-color:#06d6a0}.cfg-row b{width:42px;text-align:right;color:#ffd166}
+  .sc-row{display:flex;gap:8px;padding:7px 4px;border-bottom:1px solid #9b5de533;align-items:center}.sc-row.me{background:#06d6a022;border-radius:8px}
+  .sc-row .pos{width:26px;color:#ffd166;font-weight:700}.sc-row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sc-row .pt{font-weight:700}.sc-row .mt{color:#b79cd6;font-size:12px;width:78px;text-align:right}
+  .pv-name{font:700 22px Quicksand,sans-serif;text-align:center;color:#fff;margin:6px 0}.pv-sub{text-align:center;color:#b79cd6;font-size:12px;margin-bottom:8px}.pv-badge{text-align:center;color:#ffd166;font-weight:700;margin:6px 0}
+  .pv-row{display:flex;justify-content:space-between;gap:6px;padding:6px 2px;border-bottom:1px solid #9b5de533;font-size:13px}.pv-row span:first-child{flex:1}.pv-row span:nth-child(2){font-weight:700;width:70px;text-align:right}.pv-pos{color:#8fe9c9;width:70px;text-align:right}
+  .muted{color:#a898c0;font-size:12px}
