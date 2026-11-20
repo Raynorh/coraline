@@ -2,8 +2,8 @@
 function pos(e){if(e&&e.pointerType)lastPtr=e.pointerType;const r=cv.getBoundingClientRect();mouseX=(e.clientX-r.left)*W/r.width;mouseY=(e.clientY-r.top)*H/r.height;
  let a=Math.atan2(mouseY-CY,mouseX-CX);if(a>0)a=a<Math.PI/2?-.22:-Math.PI+.22;aim=Math.max(-Math.PI+.22,Math.min(-.22,a));}
 function act(id){if(actNew(id))return;
- if(id==='play')startPlay();else if(id==='story'){modal.style.display='block';}else if(id==='profile'){openProfiles();}
- else if(id==='config'){document.getElementById('settings').style.display='block';renderSettings();}else if(id==='apple')openApple();else if(id==='sound')setMuted(!muted);else if(id==='mute')setMuted(!muted);
+ if(id==='play')startPlay();else if(id==='story'||id==='info'){modal.style.display='block';}else if(id==='profile'){openProfileView();}
+ else if(id==='config'){openConfig();}else if(id==='apple')openApple();else if(id==='sound')setMuted(!muted);else if(id==='mute')setMuted(!muted);
  else if(id==='pause'&&state==='play'){state='pause';setMusic('pausa');setPowerBtns(false);}
  else if(id==='resume'){state='play';setMusic('partida');setPowerBtns(true);}
  else if(id==='menu')toMenu();}
@@ -12,7 +12,7 @@ function enterGame(){if(state!=='splash')return;unlock();state='menu';setMusic('
 cv.addEventListener('pointerdown',e=>{pos(e);if(state==='splash'){enterGame();return;}unlock();
  const h=hits.find(h=>mouseX>=h.x&&mouseX<=h.x+h.w&&mouseY>=h.y&&mouseY<=h.y+h.h);
  if(h){if(state==='play'&&mode==='blocks'&&/^bp[0-2]$/.test(h.id)){act(h.id);bdragging=true;bdragMoved=false;bdragStart={x:mouseX,y:mouseY};try{cv.setPointerCapture(e.pointerId);}catch(_){}}else act(h.id);return;}
- if(state==='play'&&mode==='blocks'){bPointer();return;}if(state==='play'&&mode==='snake'){sSwipe={x:mouseX,y:mouseY,moved:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}return;}if(state==='play'&&mode==='bubble'&&mouseY>TOP){if(armed&&mouseY<CY-30){tryMagicPlace(mouseX,mouseY);return;}if(e.pointerType==='mouse')shoot();else{aiming=true;try{cv.setPointerCapture(e.pointerId);}catch(_){}}}});
+ if(state==='play'&&mode==='blocks'){bPointer();return;}if(state==='play'&&mode==='snake'){if(lastPtr==='mouse'&&!IS_TOUCH)return;if(snakeCtl==='swipe'){sSwipe={x:mouseX,y:mouseY,moved:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}}else sZoneTurn(mouseX);return;}if(state==='play'&&mode==='bubble'&&mouseY>TOP){if(armed&&mouseY<CY-30){tryMagicPlace(mouseX,mouseY);return;}if(e.pointerType==='mouse')shoot();else{aiming=true;try{cv.setPointerCapture(e.pointerId);}catch(_){}}}});
 function endAim(e){if(aiming){aiming=false;pos(e);if(state==='play')shoot();}}
 cv.addEventListener('pointerup',e=>{pos(e);bEndDrag();tRelease();sSwipeEnd(mouseX,mouseY);endAim(e);});cv.addEventListener('pointercancel',()=>{sSwipe=null;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;aiming=false;tRelease();});
 document.getElementById('modal-close').addEventListener('click',()=>{modal.style.display='none';});

@@ -1,5 +1,15 @@
 # CHANGELOG — Coraline
 
+## v1.0.0 — 2026-11-20 (versión estable candidata; pruebas automáticas OK; falta jugarla a mano en móvil)
+**Burbujas** — nueva campaña de 30 niveles con mapa y estrellas (progreso por perfil), dificultad creciente (más filas, colores y ratoncitos; menos disparos) y botones especiales estilo Panda Pop: 🔩 hierro (no explota; cae si pierde apoyo), ❄️ hielo (se rompe al explotar algo al lado), 💣 bomba, ⚡ rayo (limpia la fila) y disparo 🌈 arcoíris cada 9 tiros. Se mantienen 💥 Explosión y 🔺 Piedra. El modo anterior pasa a *Sin fin*.
+**Tetris Rescate** — vuelve la mecánica original (las filas de arriba bajan como bloque). La Piedra Mágica es mucho más difícil de cargar (8 % por línea + 12 % por ratoncito) y al usarla hace caer y rellenar los botones sobre huecos, despejando las líneas que se completen.
+**Bloques** — la pieza crece 18 %, sube sobre el dedo y se mueve con ganancia táctil (1.5×/1.85×) desde su hueco de la bandeja; combos en cartel gigante, líneas por completar y pista 💡 mucho más visibles; botones 💡 🔄 más grandes.
+**Snake** — control por mitades de pantalla (izquierda = gira a su izquierda, derecha = a su derecha, relativo al rumbo) o deslizar (botón «Control» en pantalla); flechas/WASD y cruceta en PC.
+**Puntajes** — separados por juego, modo y dificultad (`coraline_scores_v3`, listo para Supabase); migración automática desde v2 sin tocar los datos anteriores.
+**Menú** — «Abrir la Puerta» y «Mejores puntajes» destacados; Perfil (nombre, mejores puntajes por juego/modo y posición); Configuración (silencio, volumen de música/voces/efectos, Apple Music, sonidos personalizados); Historia como botón «!»; Apple Music solo si está sonando.
+**Juegos nuevos** — 🌲 *Aventura* (plataformas 2D estilo Donkey Kong Country: niveles infinitos generados, muñecos de botones, carretes rodantes, murciélagos, agujas, letras C-O-R-A, lámpara de guardado, puerta final) y 🏃 *Corredor* (carrera sin fin de 3 carriles estilo Pepsiman: cambiar de carril, saltar carretes, deslizar bajo tijeras, armarios, zonas cada 600 m). Ambos con 4 dificultades (corazones y velocidad), controles táctiles y de teclado y puntajes propios.
+**Técnico** — `npm run release` (build + copia a `index.html` raíz para GitHub Pages); `docs/supabase_v1_propuesta.sql` (propuesta, NO conectada); pasos fijos a 60 Hz en los juegos nuevos; `tests/features.js` ampliado.
+
 ## v0.8.0 — 2026-11-19 (47 pruebas automáticas OK; falta jugarla a mano, sobre todo en móvil)
 **Bloques**
 - La pieza que arrastras es 100 % opaca y siempre queda por encima del tablero (ya no se vuelve transparente sobre botones colocados).

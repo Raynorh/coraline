@@ -26,13 +26,13 @@
     <h2>Historia y Personajes</h2>
     <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>6 ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
     <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a los 6 ratoncitos antes de quedarte sin los <b>25 botones</b> de munición.</p>
-    <p><b>Cuatro modos:</b> Burbujas, Tetris, Bloques y Snake. Elige la dificultad antes de entrar. En Bloques puedes usar botones redondos o cuadrados.</p>
+    <p><b>Seis juegos:</b> Burbujas, Tetris, Bloques, Snake, Aventura y Corredor. Elige la dificultad antes de entrar. En Bloques puedes usar botones redondos o cuadrados.</p>
     <h3>🧒 Coraline Jones</h3>Dispara desde la base. Te da la bienvenida y celebra al liberar a todos.
     <h3>🐈‍⬛ El Gato Negro</h3>Guía mágico. Sostiene el siguiente botón, te avisa cuando quedan 5 tiros y canaliza la Piedra Mágica.
     <h3>🎺 Señor Bobinsky</h3>Celebra cada ratoncito libre: <b>+500 puntos</b>.
     <h3>🔦 Wybie Lovat</h3>Vigilante de las sombras del Palacio Rosa. (Ayudará en futuras versiones.)
     <h3>🪡 Mamá de Botones</h3>La villana: la Otra Madre del Otro Mundo. Tejedora de la red. (En el futuro sus manos de agujas empujarán el tablero.)
-    <h3>🔺 Piedra Mágica</h3>Se carga con cada botón destruido. Al 100% pulsa el botón verde o <b>Espacio</b> y toca una casilla vacía: el botón se coloca ahí. El Gato también puede intercambiar el botón actual con el siguiente.
+    <h3>🔺 Piedra Mágica</h3>Se carga con cada botón destruido. Al 100% pulsa el botón verde o <b>Espacio</b> y toca una casilla vacía: el botón se coloca ahí. El Gato también puede intercambiar el botón actual con el siguiente. En <b>Tetris Rescate</b> la piedra es difícil de cargar (rescatar ratoncitos y limpiar líneas); al usarla, los botones que están sobre huecos caen y los rellenan.
     <button id="modal-close">Volver</button>
   </div>
   <div id="profiles">
@@ -45,8 +45,26 @@
   </div>
   <div id="scores-panel">
     <h2>Mejores puntajes</h2>
+    <div id="scores-tabs"></div><div id="scores-modes"></div>
     <div id="scores-body"></div>
     <button id="scores-close" type="button">Volver</button>
+  </div>
+  <div id="config">
+    <h2>Configuración</h2>
+    <div class="cfg-row"><span>🎵 Ambiente sonoro</span><button id="cfg-mute" class="chip" type="button">🔊 Activado</button></div>
+    <div class="cfg-row"><span>Música</span><input type="range" id="vol-music" min="0" max="100"><b id="vol-music-n"></b></div>
+    <div class="cfg-row"><span>Voces</span><input type="range" id="vol-voice" min="0" max="100"><b id="vol-voice-n"></b></div>
+    <div class="cfg-row"><span>Efectos</span><input type="range" id="vol-sfx" min="0" max="100"><b id="vol-sfx-n"></b></div>
+    <button id="cfg-apple" type="button">🎼 Reproducir con Apple Music</button>
+    <button id="cfg-sounds" type="button">📦 Sonidos personalizados (.zip / .mp3)</button>
+    <button id="config-close" type="button">Volver</button>
+  </div>
+  <div id="profile-view">
+    <h2>Perfil</h2>
+    <div id="pv-body"></div>
+    <button id="pv-special" type="button">💛 Este es el perfil de Carolina</button>
+    <button id="pv-switch" type="button">Cambiar de jugador / crear perfil</button>
+    <button id="pv-close" type="button">Volver</button>
   </div>
 </div>
 

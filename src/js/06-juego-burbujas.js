@@ -9,7 +9,7 @@ function hitBubble(x,y){for(let r=0;r<=ROWS;r++)for(let c=0;c<COLS;c++){if(!grid
 function shoot(){if(state!=='play'||proj||ammo<=0||endTimer||scrollOff>1)return;
  if(bombArmed){proj={x:CX,y:CY,vx:Math.cos(aim)*15,vy:Math.sin(aim)*15,color:cur,bomb:true};bombArmed=false;bomb=0;SFX.shoot();updateStoneBtn();return;}
  proj={x:CX,y:CY,vx:Math.cos(aim)*15,vy:Math.sin(aim)*15,color:cur};
- cur=nxt;nxt=pickColor();ammo--;SFX.shoot();
+ cur=nxt;nxt=nextShot();ammo--;SFX.shoot();
  if(armed){armed=false;stone=0;ready100=false;updateStoneBtn();}
 }
 function stepProj(){if(!proj)return;const N=3;
@@ -17,7 +17,7 @@ function stepProj(){if(!proj)return;const N=3;
   if(proj.x<12+R){proj.x=12+R;proj.vx=-proj.vx;SFX.bounce();}
   else if(proj.x>W-12-R){proj.x=W-12-R;proj.vx=-proj.vx;SFX.bounce();}
   if(proj.y<=TOP+R||hitBubble(proj.x,proj.y)){snap();}}}
-function bombBlast(x,y){let n=0;for(let r=0;r<=ROWS;r++)for(let c=0;c<COLS;c++){if(!grid[r][c])continue;const p=cellPos(r,c);if((p.x-x)**2+(p.y-y)**2<=(R*3.7)**2){popCell(r,c,n++);}}
+function bombBlast(x,y){let n=0;for(let r=0;r<=ROWS;r++)for(let c=0;c<COLS;c++){if(!grid[r][c])continue;const p=cellPos(r,c);if((p.x-x)**2+(p.y-y)**2<=(R*3.7)**2){popCell(r,c,n++,true);}}
  for(let k=0;k<28;k++)parts.push({x,y,vx:rnd(-6,6),vy:rnd(-6,6),life:rnd(20,40),c:['#ffd166','#ff9f43','#ff5d8f'][ri(3)],s:rnd(3,6)});
  floats.push({x,y:y-24,txt:'💥 BOOM',life:60,c:'#ff9f43'});SFX.pop(8);if(n)dropOrphans();}
 function snap(){if(proj&&proj.bomb){const bx=proj.x,by=proj.y;proj=null;bombBlast(bx,by);afterShot();return;}
@@ -26,7 +26,7 @@ function snap(){if(proj&&proj.bomb){const bx=proj.x,by=proj.y;proj=null;bombBlas
   if(r>0&&!neigh(r,c).some(([a,b])=>grid[a][b]))continue;
   const p=cellPos(r,c),d=(p.x-proj.x)**2+(p.y-proj.y)**2;if(d<bd){bd=d;best=[r,c];}}
  const col=proj.color;proj=null;if(!best){afterShot();return;}
- const [r,c]=best;grid[r][c]={color:col,mouse:false};
+ const [r,c]=best;if(col===RAINBOW)resolveRainbow(r,c);else grid[r][c]={color:col,mouse:false};
  const grp=flood(r,c);
  if(grp.length>=3){combo++;grp.forEach(([a,b],i)=>{popCell(a,b,i);});SFX.pop(Math.min(grp.length,8));
   stone=Math.min(100,stone+grp.length*10);bomb=Math.min(100,bomb+grp.length*4);dropOrphans();}
@@ -34,19 +34,20 @@ function snap(){if(proj&&proj.bomb){const bx=proj.x,by=proj.y;proj=null;bombBlas
  afterShot();}
 function flood(r,c){const col=grid[r][c].color,seen=new Set([r*100+c]),q=[[r,c]],out=[];
  while(q.length){const [a,b]=q.pop();out.push([a,b]);neigh(a,b).forEach(([x,y])=>{const k=x*100+y;
-  if(!seen.has(k)&&grid[x][y]&&grid[x][y].color===col){seen.add(k);q.push([x,y]);}});}return out;}
-function popCell(r,c,i){const b=grid[r][c];if(!b)return;const p=cellPos(r,c),col=COLORS[b.color];grid[r][c]=null;
+  if(!seen.has(k)&&matchable(grid[x][y])&&grid[x][y].color===col){seen.add(k);q.push([x,y]);}});}return out;}
+function popCell(r,c,i,force){const b=grid[r][c];if(!b)return;if(b.kind==='iron'&&!force)return;if(b.kind==='ice'&&!force)return;const p=cellPos(r,c),col=COLORS[b.color]||COLORS[0];grid[r][c]=null;crackIce(r,c);
  for(let k=0;k<9;k++)parts.push({x:p.x,y:p.y,vx:rnd(-3.5,3.5),vy:rnd(-4.5,1.5),life:rnd(25,45),c:col.f,s:rnd(2,4.5)});
  score+=50;floats.push({x:p.x,y:p.y,txt:'+50',life:40,c:'#fff'});
- if(b.mouse)rescue(p.x,p.y);}
+ if(b.mouse)rescue(p.x,p.y);
+ if(!force&&b.kind==='bomb')specialBlast(p.x,p.y,R*2.7);else if(!force&&b.kind==='bolt')rowZap(r);}
 function rescue(x,y){rescued++;savedTotal++;bomb=Math.min(100,bomb+30);score+=500;SFX.rescue();jumpers.push({x,y,t:0,sx:x,sy:y});
  floats.push({x,y:y-18,txt:'+500 🐭',life:70,c:'#ffd166'});
  const L=['¡Ja ja! ¡Un ratoncito libre! ¡Bravo!','¡Mis ratoncitos, mis hermosos ratoncitos!','¡Hurra, pequeña Coraline! ¡Trompeta para ti!','¡Salta, salta, ratoncito! ¡Eres libre!'];
- if(rescued<MICE0)say('Sr. Bobinsky',L[ri(L.length)],2600);}
+ if(rescued<bMice)say('Sr. Bobinsky',L[ri(L.length)],2600);}
 function dropOrphans(){const seen=new Set(),q=[];for(let c=0;c<COLS;c++)if(grid[0][c]){seen.add(c);q.push([0,c]);}
  while(q.length){const [a,b]=q.pop();neigh(a,b).forEach(([x,y])=>{const k=x*100+y;if(grid[x][y]&&!seen.has(k)){seen.add(k);q.push([x,y]);}});}
  let n=0;for(let r=0;r<=ROWS;r++)for(let c=0;c<COLS;c++){if(grid[r][c]&&!seen.has(r*100+c)){const b=grid[r][c],p=cellPos(r,c);
-  falling.push({x:p.x,y:p.y,vy:rnd(-2,0),vx:rnd(-.6,.6),color:b.color,mouse:b.mouse});grid[r][c]=null;score+=50;n++;
+  falling.push({x:p.x,y:p.y,vy:rnd(-2,0),vx:rnd(-.6,.6),color:b.color,mouse:b.mouse,kind:b.kind});grid[r][c]=null;score+=50;n++;
   if(b.mouse)rescue(p.x,p.y);}}
  if(n)SFX.fall();}
 function afterShot(){
@@ -55,7 +56,7 @@ function afterShot(){
  updateStoneBtn();
  if(ammo===5&&!warned){warned=true;playVoice('peligro');say('Gato Negro','Cuidado, Coraline. Te quedan pocos botones y la Mamá de Botones está mirando.',4600);}
  let lost=false;for(let c=0;c<COLS;c++)if(grid[ROWS][c])lost=true;
- if(rescued>=MICE0){endTimer=setTimeout(bubbleMode==='rescue'?bubbleNext:win,1100);}
+ if(rescued>=bMice){endTimer=setTimeout(bubbleMode==='endless'?bubbleNext:win,1100);}
  else if(lost){endTimer=setTimeout(lose,700);}
  else if(ammo<=0){endTimer=setTimeout(lose,1200);}
 }
@@ -64,9 +65,9 @@ function bubbleNext(){endTimer=null;const D=DIFF[diff],bonus=800*bubbleSec;score
  grid.forEach((row,r)=>row.forEach((b,c)=>{if(b){const p=cellPos(r,c);falling.push({x:p.x,y:p.y,vy:rnd(-2,0),vx:rnd(-.6,.6),color:b.color,mouse:false});}}));
  bubbleSec++;rescued=0;warned=false;ammo=Math.min(D.ammo+10,ammo+Math.round(D.ammo*.4));bomb=Math.min(100,bomb+25);
  grid=buildBubbleGrid(bubbleSec);scrollOff=ROWS*ROWH*.9;cur=pickColor();nxt=pickColor();SFX.rescue();updateStoneBtn();}
-function win(){state='win';recordScore();setPowerBtns(false);playVoice('victoria');say('Coraline','¡Lo logramos! ¡Todos los ratoncitos saltarines están a salvo!',9000);
+function win(){state='win';if(isLevels())levelWon();recordScore(isLevels()?{level:bubbleLevel}:null);setPowerBtns(false);playVoice('victoria');say('Coraline','¡Lo logramos! ¡Todos los ratoncitos saltarines están a salvo!',9000);
  for(let i=0;i<120;i++)parts.push({x:rnd(0,W),y:rnd(-100,0),vx:rnd(-1,1),vy:rnd(1,4),life:200,c:COLORS[ri(5)].f,s:rnd(3,6)});}
-function lose(){state='lose';loseT=0;recordScore();setPowerBtns(false);SFX.lose();say('Otra Madre','Perdiste… ahora eres mía.',6000);}
+function lose(){state='lose';loseT=0;recordScore(isLevels()?{level:bubbleLevel}:null);setPowerBtns(false);SFX.lose();say('Otra Madre','Perdiste… ahora eres mía.',6000);}
 function swapShot(){if(state!=='play'||mode!=='bubble'||proj||endTimer)return;const t=cur;cur=nxt;nxt=t;SFX.bounce();}
 function tryMagicPlace(x,y){
  if(!armed||proj||endTimer||state!=='play'||scrollOff>1)return false;

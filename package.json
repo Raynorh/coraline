@@ -1,6 +1,6 @@
 {
   "name": "coraline",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Coraline y el Rescate de los Ratones — juego HTML5 Canvas (sin dependencias)",
   "scripts": {
@@ -9,6 +9,7 @@
     "smoke": "node tests/smoke.js dist --patched",
     "serve": "node tools/serve.js",
     "features": "node tests/features.js dist",
-    "test:all": "npm run build && node tests/run.js && node tests/smoke.js dist --patched && node tests/features.js dist"
+    "test:all": "npm run build && node tests/run.js && node tests/smoke.js dist --patched && node tests/features.js dist",
+    "release": "node tools/release.js"
   }
 }

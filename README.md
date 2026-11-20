@@ -29,3 +29,7 @@ npm run smoke            # arranque y modos
 npm run features         # 47 comprobaciones de v0.8.0
 npm run test:all         # todo junto
 ```
+
+
+## v1.0.0 — seis juegos
+Burbujas (campaña de 30 niveles + sin fin), Tetris, Bloques, Snake, Aventura (plataformas) y Corredor. Para publicar: `npm run release`, luego `git add -A`, `git commit`, `git push` (un comando por línea en PowerShell).

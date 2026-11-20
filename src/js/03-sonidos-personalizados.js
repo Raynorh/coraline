@@ -1,8 +1,8 @@
 /* ================= SONIDOS PERSONALIZADOS (Configuración) ================= */
 const SND_NAMES=['bienvenida','victoria','peligro','poder','intro','partida','pausa'],custom={};
 const MUSIC_VOL={intro:.4,partida:.3,pausa:.35};
-function makeVoice(n,src){const a=new Audio(src);a.preload='auto';a.volume=1;a.addEventListener('error',()=>{a._bad=true});voices[n]=a;}
-function makeMusic(n,src){const was=music[n];if(was)was.pause();const a=new Audio(src);a.preload='auto';a.loop=true;a.volume=MUSIC_VOL[n];
+function makeVoice(n,src){const a=new Audio(src);a.preload='auto';a.volume=vols.voice;a.addEventListener('error',()=>{a._bad=true});voices[n]=a;}
+function makeMusic(n,src){const was=music[n];if(was)was.pause();const a=new Audio(src);a.preload='auto';a.loop=true;a.volume=MUSIC_VOL[n]*vols.music;
  a.addEventListener('error',()=>{a._bad=true;if(desiredMusic===n&&!appleMode)startSynth(n);});a.load();music[n]=a;}
 function applySound(n,blob){const url=URL.createObjectURL(blob);custom[n]=true;if(PAT[n]||MUSIC_VOL[n]){makeMusic(n,url);if(desiredMusic===n&&unlocked&&!appleMode)setMusic(n);}else makeVoice(n,url);}
 function idb(){return new Promise((res,rej)=>{const q=indexedDB.open('coraline_snd',1);q.onupgradeneeded=()=>q.result.createObjectStore('s');q.onsuccess=()=>res(q.result);q.onerror=()=>rej();});}

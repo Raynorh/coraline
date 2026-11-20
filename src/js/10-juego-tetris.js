@@ -36,15 +36,14 @@ function tGravity(){let moved=false;for(let c=0;c<TCOLS;c++){let w=TROWS-1;for(l
 function tLock(){tp.m.forEach((row,i)=>row.forEach((v,j)=>{if(v){const y=tp.y+i,x=tp.x+j;if(y>=0)tb[y][x]={c:tp.c,mouse:false};}}));
  SFX.stick();tpieces++;tp=null;tChain=0;tClearPass(true);}
 // Limpia filas completas. En modo Rescate, lo de arriba cae para rellenar los huecos (y puede encadenar nuevas líneas).
-function tClearPass(first){const full=[];for(let r=0;r<TROWS;r++)if(tb[r].every(Boolean))full.push(r);
- if(full.length){full.forEach(tRescueRow);
-  if(tetrisMode==='rescue'){full.forEach(r=>{tb[r]=Array(TCOLS).fill(null);});}
-  else{tb=tb.filter((_,r)=>!full.includes(r));while(tb.length<TROWS)tb.unshift(Array(TCOLS).fill(null));}
+function tClearPass(first,keep){const full=[];for(let r=0;r<TROWS;r++)if(tb[r].every(Boolean))full.push(r);
+ if(full.length){const r0=rescued;full.forEach(tRescueRow);const got=Math.max(0,rescued-r0);
+  tb=tb.filter((_,r)=>!full.includes(r));while(tb.length<TROWS)tb.unshift(Array(TCOLS).fill(null));
   tlines+=full.length;const pts=[0,100,300,500,800][Math.min(4,full.length)]*tlevel;score+=pts+(tChain>0?150*tChain*tlevel:0);
   if(tChain>0){floats.push({x:TX+TCOLS*TC/2,y:TY+TROWS*TC/2,txt:'¡CADENA x'+(tChain+1)+'!',c:'#ffd166',life:70});say('Coraline',tChain>=2?'¡Increíble cadena!':'¡Cadena! Los botones siguen cayendo…',1800);}
-  tlevel=1+Math.floor(tlines/8);if(tetrisMode==='rescue')stone=Math.min(100,stone+full.length*25);SFX.pop(Math.min(6,full.length*2+tChain));
-  tChain++;
-  if(tetrisMode==='rescue'){tStage='settle';tBusy=300;return;}}
+  tlevel=1+Math.floor(tlines/8);if(tetrisMode==='rescue')stone=Math.min(100,stone+full.length*8+got*12);SFX.pop(Math.min(6,full.length*2+tChain));
+  tChain++;}
+ if(keep)return;
  tAfterLock();}
 function tStep(){if(tStage==='settle'){if(tGravity()){SFX.fall();tStage='check';tBusy=260;return;}}tStage=null;tClearPass(false);}
 function tMapDone(){const bonus=1000*tMap;score+=bonus;floats.push({x:TX+TCOLS*TC/2,y:TY+TROWS*TC/2,txt:'¡MAPA '+tMap+' LIBRE! +'+bonus,c:'#ffd166',life:100});
@@ -57,8 +56,10 @@ function tAfterLock(){const D=DIFF[diff];tChain=0;
  if(tb.slice(0,4).some(r=>r.some(Boolean))&&!warned){warned=true;playVoice('peligro');say('Gato Negro','Cuidado, Coraline. Te quedan pocos botones y la Mamá de Botones está mirando.',4600);}
  if(tetrisMode==='rescue'&&stone>=100&&!ready100){ready100=true;SFX.ready();say('Gato Negro','La Piedra Mágica está lista… pulsa 🔺 o Espacio.',3000);}
  updateStoneBtn();tSpawn();}
-function tStone(){let n=0;for(let r=TROWS-1;r>=0&&n<2;r--){if(tb[r].some(Boolean)){tRescueRow(r);tb.splice(r,1);tb.unshift(Array(TCOLS).fill(null));n++;r++;}}
- stone=0;ready100=false;SFX.rescue();updateStoneBtn();if(tetrisMode==='rescue'&&rescued>=MICE0&&!endTimer){tp=null;tMapDone();}}
+// Piedra Mágica (difícil de lograr): los botones que quedaron sobre huecos caen y rellenan; las filas que se completan se despejan.
+function tStone(){const before=tb.flat().filter(Boolean).length;tGravity();stone=0;ready100=false;SFX.rescue();SFX.fall();tClearPass(false,true);updateStoneBtn();
+ say('Coraline','¡Los botones cayeron y rellenaron los huecos!',2200);
+ if(tetrisMode==='rescue'&&rescued>=MICE0&&!endTimer){tp=null;tMapDone();}}
 function tPress(id){if(state!=='play'||!tp||endTimer)return;if(id==='tRot')tRot();else if(id==='tHard')tHard();else{tHold={id,t:200};if(id==='tL')tMove(-1,0);if(id==='tR')tMove(1,0);}}
 function tRelease(){tHold=null;}
 function tUpdate(){if(endTimer||drawer.classList.contains('open'))return;

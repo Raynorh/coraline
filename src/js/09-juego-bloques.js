@@ -8,10 +8,11 @@ const BSHAPES=[
  [[0,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[2,1],[2,2]]
 ];
 let bgrid=[],bpieces=[],bselected=-1,bscore=0,bturn=0,bRescueUsed=false,bcombo=0,bBestCombo=0,bNoClear=0,bdragging=false,bdragMoved=false,bdragStart=null,bpreview=null;
+const bPops=[];
 let bTime=0,bBest=0,bHints=1,bSwaps=1,bHintTarget=null,bPressure=0,bPressureMsg=false;
 // Mejor puntaje previo de este perfil en Bloques (para el reto "a punto de superar el récord").
 function bBestScore(){try{const list=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');return list.filter(v=>v&&v.mode==='Bloques'&&(!profile||v.profileId===profile.id)).reduce((m,v)=>Math.max(m,Number(v.score)||0),0);}catch(e){return 0;}}
-function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;
+function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
  bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bHintTarget=null;bPressure=0;bPressureMsg=false;
  score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];clearTimeout(endTimer);endTimer=null;bpieces=bDeal();
  say('Coraline',bBest>0?'Tu récord es '+bBest.toLocaleString('es-CL')+'. ¡Vamos a superarlo!':'Arrastra los botones al tablero. Completa líneas y encadena combos.',3600);}
@@ -58,7 +59,7 @@ function bPlace(piece,x,y){
   const multiplier=Math.min(8,1+bcombo),base=clear.size*20,multiBonus=lines>1?150*(lines-1):0,comboBonus=100*bcombo;
   const gained=(base+multiBonus)*multiplier+comboBonus;bscore+=gained;
   clear.forEach(k=>bgrid[Math.floor(k/BC)][k%BC]=-1);
-  floats.push({x:240,y:490,txt:(lines>1?'¡'+lines+' LÍNEAS! ':'')+'¡COMBO x'+multiplier+'! +'+gained,c:'#ffd166',life:80});
+  bPops.push({big:multiplier>1?'COMBO x'+multiplier:(lines>1?lines+' LÍNEAS':'¡LÍNEA!'),sub:(multiplier>1&&lines>1?lines+' líneas · ':'')+'+'+gained.toLocaleString('es-CL'),life:70,max:70,hot:multiplier>=4});
   say('Coraline',bcombo>=3?'¡Eso fue increíble! ¡Sigue el combo!':'¡Línea despejada! ¡Buen trabajo!',1800);
   SFX.pop(Math.min(4,lines));
   if(bgrid.every(r=>r.every(v=>v===-1))){bscore+=800;floats.push({x:240,y:380,txt:'¡TABLERO LIMPIO! +800',c:'#8fe9c9',life:90});}
@@ -80,8 +81,15 @@ function bDrawButtonCell(x,y,color,alpha=1,scale=0.82){ctx.save();ctx.globalAlph
 // ---------- Pieza flotante ----------
 // La pieza sigue al puntero píxel a píxel (sin saltar de casilla en casilla). En pantalla táctil se dibuja
 // por encima del dedo para que nunca lo tape; al soltar se ancla a la casilla más cercana de su posición real.
-const B_FINGER_GAP=46;
-function bFloat(lift){const p=bpieces[bselected],bb=bPieceBounds(p),pw=bb.w*BS,ph=bb.h*BS,ly=lift?ph/2+B_FINGER_GAP:0;return{left:mouseX-pw/2,top:mouseY-ph/2-ly,pw,ph};}
+const B_FINGER_GAP=46,B_SCALE=1.18,B_GAIN_X=1.5,B_GAIN_Y=1.85;
+// Táctil: la pieza parte del hueco de la bandeja y se mueve más rápido que el dedo (ganancia), con un poco de
+// elevación para que el dedo no la tape. Ratón: la pieza sigue al puntero exacto.
+function bFloat(lift){const p=bpieces[bselected],bb=bPieceBounds(p),pw=bb.w*BS,ph=bb.h*BS;let cx=mouseX,cy=mouseY;
+ if(lift&&bdragStart){const sx=15+bselected*153+71,sy=597,dx=mouseX-bdragStart.x,dy=mouseY-bdragStart.y;
+  cx=sx+dx*B_GAIN_X;cy=sy+dy*B_GAIN_Y-Math.min(B_FINGER_GAP,Math.max(0,-dy)*.5);}
+ else if(lift)cy-=ph/2+B_FINGER_GAP;
+ cx=Math.max(20,Math.min(W-20,cx));cy=Math.max(TOP+10,Math.min(H-20,cy));
+ return{left:cx-pw/2,top:cy-ph/2,pw,ph,cx,cy,bb};}
 function bShowFloat(){return bselected>=0&&!!bpieces[bselected]&&(bdragging||(lastPtr==='mouse'&&mouseY<525));}
 function bTargetAt(lift){const p=bpieces[bselected],f=bFloat(lift);
  const inside=p.cells.some(([dx,dy])=>{const cx=f.left+(dx+.5)*BS,cy=f.top+(dy+.5)*BS;return cx>=BX&&cx<BX+BC*BS&&cy>=BY&&cy<BY+BC*BS;});
@@ -110,19 +118,19 @@ function bUseSwap(){if(state!=='play'||mode!=='blocks')return;
  const nd=bDeal();bpieces=bpieces.map((p,i)=>p?nd[i]:null);bSwaps--;bscore-=cost;score=bscore;bselected=-1;bdragging=false;bpreview=null;bHintTarget=null;
  floats.push({x:438,y:120,txt:'−'+cost,c:'#ff8eae',life:60});SFX.bounce();say('Gato Negro','¡Botones nuevos! Úsalos con cabeza.',2600);}
 
-function bCircleBtn(x,y,label,id,uses,cost,ok){ctx.save();ctx.fillStyle=ok?'#2a1346':'#1a0f28';ctx.beginPath();ctx.arc(x,y,17,0,TAU);ctx.fill();ctx.strokeStyle=ok?'#ffd166':'#5a4a70';ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=ok?1:.45;txt(label,x,y+6,'16px sans-serif','#fff');ctx.globalAlpha=1;
- ctx.fillStyle=uses>0?'#06d6a0':'#ff5d8f';ctx.beginPath();ctx.arc(x+13,y-13,8,0,TAU);ctx.fill();txt(String(uses),x+13,y-9,'700 11px Quicksand,sans-serif','#07050e');
- txt('−'+cost,x,y+31,'700 10px Quicksand,sans-serif',ok?'#ffd166':'#8d78a8');ctx.restore();hits.push({x:x-20,y:y-20,w:40,h:40,id});}
+function bCircleBtn(x,y,label,id,uses,cost,ok){ctx.save();const g=ok?.5+.5*Math.sin(tick*.08):0;ctx.shadowColor='#ffd166';ctx.shadowBlur=ok?10+8*g:0;ctx.fillStyle=ok?'#3a1d62':'#1a0f28';ctx.beginPath();ctx.arc(x,y,22,0,TAU);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=ok?'#ffd166':'#5a4a70';ctx.lineWidth=3;ctx.stroke();ctx.globalAlpha=ok?1:.45;txt(label,x,y+8,'22px sans-serif','#fff');ctx.globalAlpha=1;
+ ctx.fillStyle=uses>0?'#06d6a0':'#ff5d8f';ctx.beginPath();ctx.arc(x+17,y-17,10,0,TAU);ctx.fill();txt(String(uses),x+17,y-13,'900 13px Quicksand,sans-serif','#07050e');
+ txt('−'+cost,x,y+38,'800 12px Quicksand,sans-serif',ok?'#ffd166':'#8d78a8');ctx.restore();hits.push({x:x-26,y:y-26,w:52,h:52,id});}
 
 function drawBlocks(){
  drawSky();bUpdatePressure();
  ctx.fillStyle='rgba(10,5,20,.94)';ctx.fillRect(0,0,W,TOP);
  txt('✦ EL TABLERO DE CORALINE ✦',240,27,'700 18px Quicksand,sans-serif','#ffd166');
- if(bcombo>0)txt('COMBO x'+Math.min(8,1+bcombo)+' · RACHA '+bcombo+' · quedan '+(3-bNoClear)+' jugadas',240,49,'700 11px Quicksand,sans-serif','#ffd166');else txt('BOTONES ENCANTADOS',240,49,'700 10px Quicksand,sans-serif','#cdb6ea');
+ if(bcombo>0)txt('🔥 COMBO x'+Math.min(8,1+bcombo)+' · racha '+bcombo+' · quedan '+(3-bNoClear)+' jugadas',240,49,'900 14px Quicksand,sans-serif','#ffd166');else txt('BOTONES ENCANTADOS',240,49,'700 10px Quicksand,sans-serif','#cdb6ea');
  ctx.save();ctx.shadowColor='#06d6a0';ctx.shadowBlur=14;ctx.fillStyle='rgba(20,12,36,.96)';rr(120,60,240,35,17);ctx.fill();ctx.strokeStyle='#06d6a0';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
  txt('✧ '+bscore.toLocaleString('es-CL')+' PUNTOS ✧',240,83,'900 19px Quicksand,sans-serif','#fff');
  ctx.fillStyle='#2a1346';rr(8,62,108,30,14);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=1.5;ctx.stroke();txt(blocksStyle==='square'?'Cuadrado':'Redondo',62,82,'700 11px Quicksand,sans-serif','#fff');hits.push({x:8,y:62,w:108,h:30,id:'bstyle'});
- const cost=bCost();bCircleBtn(392,76,'💡','bLamp',bHints,cost,bHints>0&&bscore>=cost);bCircleBtn(438,76,'🔄','bSwap',bSwaps,cost,bSwaps>0&&bscore>=cost);
+ const cost=bCost();bCircleBtn(386,72,'💡','bLamp',bHints,cost,bHints>0&&bscore>=cost);bCircleBtn(436,72,'🔄','bSwap',bSwaps,cost,bSwaps>0&&bscore>=cost);
  if(bPressure>.05){ctx.fillStyle='#1a1228';rr(8,95,108,4,2);ctx.fill();ctx.fillStyle=bPressure>.66?'#ff5d8f':bPressure>.33?'#ff9f43':'#ffd166';rr(8,95,108*bPressure,4,2);ctx.fill();}
  ctx.save();ctx.shadowColor='#9b5de5';ctx.shadowBlur=18;ctx.fillStyle='rgba(24,12,42,.95)';rr(BX-7,BY-7,BC*BS+14,BC*BS+14,15);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=2;ctx.stroke();ctx.restore();
  const sq=blocksStyle==='square'?2:7;
@@ -135,15 +143,16 @@ function drawBlocks(){
  }
  // Pista 💡: brillo dorado donde encaja mejor.
  if(bHintTarget&&bpieces[bHintTarget.i]){const hp=bpieces[bHintTarget.i],pulse=.55+.45*Math.sin(tick*.12);
-  hp.cells.forEach(([dx,dy])=>{const x=BX+(bHintTarget.x+dx)*BS,y=BY+(bHintTarget.y+dy)*BS;ctx.save();ctx.shadowColor='#ffd166';ctx.shadowBlur=16*pulse;ctx.fillStyle='rgba(255,209,102,'+(.18+.2*pulse)+')';rr(x+1,y+1,BS-2,BS-2,sq);ctx.fill();ctx.strokeStyle='#ffd166';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();});}
+  hp.cells.forEach(([dx,dy])=>{const x=BX+(bHintTarget.x+dx)*BS,y=BY+(bHintTarget.y+dy)*BS;ctx.save();ctx.shadowColor='#ffd166';ctx.shadowBlur=28*pulse;ctx.fillStyle='rgba(255,209,102,'+(.35+.3*pulse)+')';rr(x,y,BS,BS,sq);ctx.fill();ctx.strokeStyle='#fff3c4';ctx.lineWidth=3.5;ctx.stroke();ctx.restore();});}
  // Guía de destino: casillas donde quedará la pieza (contorno), más las líneas que se completarían.
  bUpdatePreview();
  if(bpreview&&bShowFloat()){const p=bpieces[bselected],ok=bpreview.valid;
   if(ok){const g=bgrid.map(r=>r.slice());p.cells.forEach(([dx,dy])=>g[bpreview.row+dy][bpreview.col+dx]=p.color);const f=bFullLines(g);
-   f.rows.forEach(r=>{ctx.fillStyle='rgba(255,209,102,.22)';ctx.fillRect(BX,BY+r*BS,BC*BS,BS);});f.cols.forEach(c=>{ctx.fillStyle='rgba(255,209,102,.22)';ctx.fillRect(BX+c*BS,BY,BS,BC*BS);});}
+   const gp=.5+.5*Math.sin(tick*.18);ctx.save();ctx.shadowColor='#ffd166';ctx.shadowBlur=18;f.rows.forEach(r=>{ctx.fillStyle='rgba(255,209,102,'+(.32+.2*gp)+')';ctx.fillRect(BX,BY+r*BS,BC*BS,BS);ctx.strokeStyle='#ffe38f';ctx.lineWidth=3;ctx.strokeRect(BX,BY+r*BS,BC*BS,BS);});f.cols.forEach(c=>{ctx.fillStyle='rgba(255,209,102,'+(.32+.2*gp)+')';ctx.fillRect(BX+c*BS,BY,BS,BC*BS);ctx.strokeStyle='#ffe38f';ctx.lineWidth=3;ctx.strokeRect(BX+c*BS,BY,BS,BC*BS);});ctx.restore();
+   const n=f.rows.length+f.cols.length;if(n>0)txt('¡'+n+(n>1?' LÍNEAS':' LÍNEA')+'!',240,BY-14,'900 18px Quicksand,sans-serif','#ffe38f');}
   p.cells.forEach(([dx,dy])=>{const gx=bpreview.col+dx,gy=bpreview.row+dy;if(gx<0||gx>=BC||gy<0||gy>=BC)return;
    ctx.save();ctx.fillStyle=ok?'rgba(6,214,160,.30)':'rgba(255,93,143,.30)';rr(BX+gx*BS+1,BY+gy*BS+1,BS-2,BS-2,sq);ctx.fill();ctx.strokeStyle=ok?'#06d6a0':'#ff5d8f';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();});
-  txt(ok?'✓ POSICIÓN VÁLIDA':'✕ NO CABE AHÍ',240,490,'900 12px Quicksand,sans-serif',ok?'#06d6a0':'#ff8eae');
+  txt(ok?'✓ POSICIÓN VÁLIDA':'✕ NO CABE AHÍ',240,490,'900 15px Quicksand,sans-serif',ok?'#06d6a0':'#ff8eae');
  }
  if(!(bpreview&&bShowFloat()))txt(bdragging?'Suelta sobre el tablero para colocar':IS_TOUCH?'Arrastra un botón al tablero':'Arrastra un botón al tablero o elígelo y haz clic',240,470,'600 12px Quicksand,sans-serif',bdragging?'#06d6a0':'#e4d5f5');
  bpieces.forEach((p,i)=>{const x=15+i*153,y=535,w=143,h=125;ctx.save();ctx.fillStyle=bselected===i?'rgba(44,25,70,.98)':'rgba(22,12,38,.94)';rr(x,y,w,h,15);ctx.fill();ctx.strokeStyle=bselected===i?'#06d6a0':'#b79cd6';ctx.lineWidth=bselected===i?3.5:2;ctx.stroke();if(bselected===i){ctx.shadowColor='#06d6a0';ctx.shadowBlur=15;ctx.stroke();}ctx.restore();
@@ -157,9 +166,18 @@ function drawBlocks(){
  menuBtn('Pausa',690,'pause');
  // Pieza flotante: completamente opaca y siempre por encima de todo lo demás.
  if(bShowFloat()){const p=bpieces[bselected],f=bFloat(lastPtr==='touch');
-  p.cells.forEach(([dx,dy])=>{const x=f.left+(dx+.5)*BS,y=f.top+(dy+.5)*BS;ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x+3,y+8,BS*.4,BS*.28,0,0,TAU);ctx.fill();});
-  p.cells.forEach(([dx,dy])=>bDrawButtonCell(f.left+(dx+.5)*BS,f.top+(dy+.5)*BS,p.color,1,.94));
-  if(bdragging&&lastPtr==='touch'){ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.beginPath();ctx.moveTo(mouseX,f.top+f.ph+4);ctx.lineTo(mouseX,mouseY-14);ctx.stroke();ctx.setLineDash([]);}}
+  const S=BS*B_SCALE,pos2=([dx,dy])=>[f.cx+(dx+.5-f.bb.w/2)*S,f.cy+(dy+.5-f.bb.h/2)*S];
+  p.cells.forEach(c=>{const [x,y]=pos2(c);ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(x+3,y+9,S*.4,S*.28,0,0,TAU);ctx.fill();});
+  ctx.save();ctx.shadowColor='#ffffff';ctx.shadowBlur=10;p.cells.forEach(c=>{const [x,y]=pos2(c);bDrawButtonCell(x,y,p.color,1,.94*B_SCALE);});ctx.restore();
+  if(bdragging&&lastPtr==='touch'){ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.beginPath();ctx.moveTo(mouseX,mouseY-14);ctx.lineTo(f.cx,f.cy+f.ph*B_SCALE/2+4);ctx.stroke();ctx.setLineDash([]);
+   ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(mouseX,mouseY,9,0,TAU);ctx.fill();}}
+ // Carteles grandes de combo: aparecen con rebote en el centro del tablero.
+ for(let i=bPops.length-1;i>=0;i--){const q=bPops[i];q.life--;if(q.life<=0){bPops.splice(i,1);continue;}
+  const age=q.max-q.life,sc=age<10?.4+age*.085:1+.04*Math.sin(age*.5),al=Math.min(1,q.life/18);
+  ctx.save();ctx.globalAlpha=al;ctx.translate(240,BY+BC*BS/2-20-(age*.4));ctx.scale(sc,sc);ctx.textAlign='center';
+  ctx.font='900 '+(q.hot?54:46)+'px Quicksand,sans-serif';ctx.lineJoin='round';ctx.lineWidth=9;ctx.strokeStyle='#2a0a4d';ctx.strokeText(q.big,0,0);
+  ctx.shadowColor=q.hot?'#ff5d8f':'#ffd166';ctx.shadowBlur=26;ctx.fillStyle=q.hot?'#ff9ec0':'#ffe38f';ctx.fillText(q.big,0,0);ctx.shadowBlur=0;
+  ctx.font='900 26px Quicksand,sans-serif';ctx.lineWidth=6;ctx.strokeText(q.sub,0,38);ctx.fillStyle='#fff';ctx.fillText(q.sub,0,38);ctx.restore();}
  floats.forEach(f=>{ctx.globalAlpha=Math.min(1,f.life/20);txt(f.txt,f.x,f.y,'700 16px Quicksand,sans-serif',f.c);});ctx.globalAlpha=1;
  drawBanner();
 }
