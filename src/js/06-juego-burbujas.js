@@ -85,8 +85,14 @@ function tryMagicPlace(x,y){
  afterShot();return true;
 }
 function activateBomb(){if(state!=='play'||mode!=='bubble'||bomb<100||armed||bombArmed||proj||scrollOff>1)return;bombArmed=true;playVoice('poder');say('Gato Negro','¡Bomba lista! Apunta y dispara: explota al impactar y no gasta botones.',3600);updateStoneBtn();}
-function activateMagic(){if(state==='play'&&mode==='tetris'){if(stone<100)return;playVoice('poder');say('Gato Negro','Usa la piedra mágica. Mira a través del agujero.',3600);tStone();return;}if(state!=='play'||mode!=='bubble'||stone<100||armed||bombArmed||proj||scrollOff>1)return;armed=true;playVoice('poder');say('Gato Negro','Toca una casilla vacía para colocar el botón. La piedra se consume al colocarlo.',3600);updateStoneBtn();}
-function updateStoneBtn(){updateBombBtn();stoneBtn.classList.toggle('ready',stone>=100&&!armed);stoneBtn.classList.toggle('armed',armed);
+function colorRain(){let col=cur;if(col<0){const cnt={};grid.flat().forEach(b=>{if(matchable(b)&&b.color>=0)cnt[b.color]=(cnt[b.color]||0)+1;});const k=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];col=k==null?-1:+k;}
+ if(col<0){say('Gato Negro','No hay botones de ese color.',1600);return;}
+ let n=0;for(let r=0;r<=ROWS;r++)for(let c=0;c<COLS;c++){const b=grid[r][c];if(b&&b.color===col&&matchable(b))popCell(r,c,n++);}
+ stone=0;ready100=false;SFX.pop(8);playVoice('poder');floats.push({x:240,y:300,txt:'🌈 ¡LLUVIA DE COLOR! ×'+n,life:80,c:'#4dffc4'});for(let k=0;k<50;k++)parts.push({x:rnd(20,460),y:rnd(80,500),vx:rnd(-3,3),vy:rnd(-3,3),life:rnd(25,45),c:COLORS[col].f,s:rnd(3,5)});
+ dropOrphans();updateStoneBtn();afterShot();}
+function activateMagic(){if(isLevels()&&state==='play'&&mode==='bubble'){if(stone<100||proj||endTimer||scrollOff>1)return;colorRain();return;}
+ if(state==='play'&&mode==='tetris'){if(stone<100)return;playVoice('poder');say('Gato Negro','Usa la piedra mágica. Mira a través del agujero.',3600);tStone();return;}if(state!=='play'||mode!=='bubble'||stone<100||armed||bombArmed||proj||scrollOff>1)return;armed=true;playVoice('poder');say('Gato Negro','Toca una casilla vacía para colocar el botón. La piedra se consume al colocarlo.',3600);updateStoneBtn();}
+function updateStoneBtn(){updateBombBtn();stoneBtn.classList.toggle('ready',stone>=100&&!armed);stoneBtn.classList.toggle('armed',armed);stoneBtn.title=mode==='tetris'?'Piedra Mágica: los botones caen y rellenan huecos (Espacio)':isLevels()?'🌈 Lluvia de color: elimina todos los botones del color que tienes cargado (Espacio)':'Piedra Mágica: colocar un botón donde quieras (Espacio)';
  const p=Math.min(100,stone);stoneBtn.querySelector('.ring').style.background='conic-gradient(#06d6a0 '+p*3.6+'deg,#1a1a2a55 0)';
  stoneBtn.querySelector('.ring').style.mask=stoneBtn.querySelector('.ring').style.webkitMask='radial-gradient(circle,transparent 55%,#000 58%)';}
 function updateBombBtn(){bombBtn.classList.toggle('ready',bomb>=100&&!bombArmed);bombBtn.classList.toggle('armed',bombArmed);

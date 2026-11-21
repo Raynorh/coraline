@@ -44,6 +44,6 @@ function loseLines(){
  if(mode==='tetris')return['Rescataste '+savedTotal+' ratoncitos en total',pts];
  if(mode==='bubble'&&bubbleMode==='endless')return['Rescataste '+savedTotal+' ratoncitos en total',pts];
  if(mode==='bubble')return['Nivel '+bubbleLevel+' · rescataste '+rescued+' de '+bMice+' ratoncitos',pts];
- if(mode==='kong')return['Llegaste al nivel '+kLevelNo+' · '+kButtons+' botones',pts];
- if(mode==='runner')return[Math.floor(rDist)+' m recorridos · '+rButtons+' botones',pts];
+ if(mode==='kong')return['Nivel '+kLevelNo+' · 🐱 '+kCats+' gatitos en este nivel · 🐭 '+kMice+' ratoncitos rescatados',pts];
+ if(mode==='runner')return[Math.floor(rDist)+' m recorridos · '+rButtons+' botones · zona '+rStage,pts];
  return[pts];}

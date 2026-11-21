@@ -58,7 +58,8 @@ function buildBubbleGrid(sec){const D=DIFF[diff],endless=bubbleMode==='endless';
  return g;}
 function newGame(){
  bubbleSec=1;savedTotal=0;bomb=0;bombArmed=false;scrollOff=0;bShots=0;bMice=MICE0;grid=buildBubbleGrid(1);
- ammo=DIFF[diff].ammo;if(isLevels()){const L=levelDef(bubbleLevel);grid=buildLevelGrid(L);bMice=L.mice;ammo=L.ammo;bAmmo0=ammo;}score=0;rescued=0;stone=50;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];warned=false;ready100=false;combo=0;
+ ammo=DIFF[diff].ammo;if(isLevels()){const L=levelDef(bubbleLevel);grid=buildLevelGrid(L);bMice=L.mice;ammo=L.ammo;bAmmo0=ammo;}
+ score=0;rescued=0;stone=isLevels()?0:50;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];warned=false;ready100=false;combo=0;
  cur=pickColor();nxt=pickColor();clearTimeout(endTimer);endTimer=null;
  say('Coraline',isLevels()?'Nivel '+bubbleLevel+': rescata '+bMice+' ratoncitos'+(bubbleLevel>=3?'. ¡Cuidado con los botones de hierro, hielo y las bombas!':'.'):'Hola, soy Coraline Jones. Necesito tu ayuda para encontrar todos los ratoncitos del Señor Bobinsky.',5200);
 }
@@ -74,7 +75,8 @@ function pickColor(){
  for(const o of choices){roll-=o.w;if(roll<=0)return o.c;}return choices[0].c;
 }
 function syncLauncher(){const present=colorsPresent();if(!present.size)return;if(cur!==RAINBOW&&!present.has(cur))cur=pickColor();if(nxt!==RAINBOW&&!present.has(nxt))nxt=pickColor();}
-function startPlay(){scoreRecorded=false;unlock();kKeys={};kTouch.l=kTouch.r=kTouch.j=0;kHold.clear();if(mode==='kong')kNew();else if(mode==='runner')rNew();else if(mode==='tetris')tNew();else if(mode==='blocks')bNew();else if(mode==='snake')sNew();else newGame();state='play';fade=1;setMusic('partida');setPowerBtns(true);updateStoneBtn();}
+function startPlay(){if(mode==='bubble'&&bubbleMode==='levels'&&bubbleLevel>=3){try{if(!localStorage.getItem('cor_legend_seen'))setTimeout(openLegend,400);}catch(e){}}
+ scoreRecorded=false;unlock();kKeys={};kTouch.l=kTouch.r=kTouch.j=kTouch.c=0;kHold.clear();if(mode==='kong')kNew();else if(mode==='runner')rNew();else if(mode==='tetris')tNew();else if(mode==='blocks')bNew();else if(mode==='snake')sNew();else newGame();state='play';fade=1;setMusic('partida');setPowerBtns(true);updateStoneBtn();}
 function setPowerBtns(on){const showStone=on&&(mode==='bubble'||(mode==='tetris'&&tetrisMode==='rescue'));stoneBtn.style.display=showStone?'block':'none';bombBtn.style.display=(on&&mode==='bubble')?'block':'none';}
 function toMenu(){state='menu';setPowerBtns(false);setMusic('intro');}
 

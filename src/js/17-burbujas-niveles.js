@@ -77,4 +77,5 @@ function drawLevelMap(){drawSky();drawFog(.15);drawFireflies();const pr=bubblePr
   if(open){txt(String(n),p.x+p.w/2,p.y+38,'900 26px Quicksand,sans-serif','#fff');txt('★'.repeat(st)+'☆'.repeat(3-st),p.x+p.w/2,p.y+62,'700 14px Quicksand,sans-serif','#ffd166');hits.push({x:p.x,y:p.y,w:p.w,h:p.h,id:'lv'+n});}
   else txt('🔒',p.x+p.w/2,p.y+46,'24px sans-serif','#fff');}
  if(pr.unlocked>=MAXLV&&pr.stars[MAXLV])txt('¡Campaña completa! Prueba el modo Sin fin',240,628,'700 14px Quicksand,sans-serif','#06d6a0');
- menuBtn('Volver',650,'back','#9b5de5');}
+ menuBtn('Volver',650,'back','#9b5de5');
+ ctx.fillStyle='#2a1346';ctx.beginPath();ctx.arc(440,44,18,0,TAU);ctx.fill();ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.stroke();txt('❓',440,50,'17px sans-serif','#fff');hits.push({x:422,y:26,w:36,h:36,id:'legend'});}

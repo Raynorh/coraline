@@ -26,6 +26,9 @@ $('scores-panel').addEventListener('click',e=>{const b=e.target.closest('button'
  if(b.dataset.g){scGame=b.dataset.g;scMode=Object.keys(GAMES[scGame].modes)[0];renderScores();}else if(b.dataset.m){scMode=b.dataset.m;renderScores();}else if(b.dataset.d){scDiff=b.dataset.d;renderScores();}});
 function showScores(){openScores();}
 $('scores-close').onclick=()=>showPanel('scores-panel',false);
+// ---- Leyenda de poderes ----
+function openLegend(){showPanel('legend',true);try{localStorage.setItem('cor_legend_seen','1');}catch(e){}}
+$('legend-close').onclick=()=>showPanel('legend',false);
 // ---- Perfil ----
 function openProfileView(){if(!profile){openProfiles();return;}
  const rows=[];Object.keys(GAMES).forEach(g=>Object.keys(GAMES[g].modes).forEach(m=>{const b=ScoreStore.best(profile.id,g,m),r=b?ScoreStore.rank(profile.id,g,m):null;

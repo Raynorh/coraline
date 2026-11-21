@@ -2,17 +2,18 @@
    Con paredes: chocar con el borde pierde. Sin paredes: el hilo reaparece por el lado opuesto.
    Móvil: se juega tocando/deslizando sobre la pantalla (sin botones). PC: flechas o WASD. */
 const SN=16,SC=22,SOX=64,SOY=108;
-let snake=[],sdir={x:1,y:0},snext={x:1,y:0},sfood={x:8,y:8},sacc=0,sSwipe=null;
+let sTouchZone='',snake=[],sdir={x:1,y:0},snext={x:1,y:0},sfood={x:8,y:8},sacc=0,sSwipe=null;
 function sSpawnFood(){const occ=new Set(snake.map(p=>p.x+','+p.y));const free=[];for(let y=0;y<SN;y++)for(let x=0;x<SN;x++)if(!occ.has(x+','+y))free.push({x,y});return free.length?free[ri(free.length)]:{x:0,y:0};}
 function sNew(){score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];const mid=8;snake=[{x:mid,y:mid},{x:mid-1,y:mid},{x:mid-2,y:mid}];sdir={x:1,y:0};snext={x:1,y:0};sfood=sSpawnFood();sacc=0;sSwipe=null;clearTimeout(endTimer);endTimer=null;
- say('Coraline',(snakeWrap?'Sin paredes: si cruzas un borde apareces al otro lado. ':'Con paredes: no choques con el borde. ')+(IS_TOUCH?'Toca la mitad izquierda o derecha para girar.':'Usa flechas o WASD.'),4200);}
+ say('Coraline',(snakeWrap?'Sin paredes: si cruzas un borde apareces al otro lado. ':'Con paredes: no choques con el borde. ')+'Toca ARRIBA, ABAJO, IZQUIERDA o DERECHA en la pantalla (o usa flechas/WASD).',4200);}
 function sTurn(dx,dy){if(!dx&&!dy)return;if(sdir.x+dx===0&&sdir.y+dy===0)return;snext={x:dx,y:dy};}
 function sPress(id){if(state!=='play'||mode!=='snake')return;if(id==='sU')sTurn(0,-1);else if(id==='sD')sTurn(0,1);else if(id==='sL')sTurn(-1,0);else if(id==='sR')sTurn(1,0);}
 // Toque simple: gira hacia el lado tocado respecto de la cabeza (eje contrario al movimiento actual).
-// Control por mitades: mitad izquierda = girar a la izquierda de la serpiente, derecha = girar a la derecha
-// (relativo al rumbo, como un volante). Se parte de la dirección ya encolada para encadenar toques rápidos.
-function sZoneTurn(x){const d=snext,left=x<W/2;if(left)sTurn(d.y,-d.x);else sTurn(-d.y,d.x);}
-// Deslizar: gira en cuanto el dedo recorre ~18 px, sin esperar a soltar (respuesta inmediata).
+// Control en X: la pantalla se divide con dos diagonales (centro en XC,YC) en 4 zonas: Arriba / Izquierda / Derecha / Abajo.
+// Tocar una zona manda a la culebra en esa dirección absoluta (no puede darse la vuelta sobre sí misma).
+const XC=240,XY=420,XT=70;
+function sXZone(x,y){const dx=x-XC,dy=y-XY,k=dy<0?(XY-XT):(H-XY);return Math.abs(dy)*(XC)>Math.abs(dx)*k?(dy<0?'U':'D'):(dx<0?'L':'R');}
+function sXTurn(x,y){const z=sXZone(x,y);if(z==='U')sTurn(0,-1);else if(z==='D')sTurn(0,1);else if(z==='L')sTurn(-1,0);else sTurn(1,0);}
 function sSwipeMove(x,y){if(!sSwipe)return;const dx=x-sSwipe.x,dy=y-sSwipe.y;if(Math.hypot(dx,dy)<18)return;sSwipe.moved=true;
  if(Math.abs(dx)>Math.abs(dy))sTurn(dx>0?1:-1,0);else sTurn(0,dy>0?1:-1);sSwipe.x=x;sSwipe.y=y;}
 function sSwipeEnd(x,y){sSwipe=null;}
@@ -30,11 +31,11 @@ function drawSnake(){drawSky();drawFog(.12);txt('EL HILO',240,36,'900 22px "Cinz
  const foodCol=tick%40<20?4:0;drawBtnS(SOX+sfood.x*SC+SC/2,SOY+sfood.y*SC+SC/2,foodCol,false,SC/2-1);
  snake.forEach((p,i)=>{const x=SOX+p.x*SC+SC/2,y=SOY+p.y*SC+SC/2;ctx.fillStyle=i===0?'#06d6a0':'#0b6b52';ctx.beginPath();ctx.arc(x,y,SC*.42,0,TAU);ctx.fill();if(i===0){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x+4,y-2,2,0,TAU);ctx.fill();}});
  txt(snakeWrap?'SIN PAREDES · cruza los bordes':'CON PAREDES · cuidado con el borde',240,SOY+SN*SC+30,'700 12px Quicksand,sans-serif',snakeWrap?'#4dd0e1':'#ff8eae');
- if(IS_TOUCH||lastPtr==='touch'){
-  if(snakeCtl!=='swipe'){ctx.save();[[0,'#4cc9ff','↶ GIRA A LA IZQUIERDA'],[W/2,'#ff9f43','GIRA A LA DERECHA ↷']].forEach(([x,c,l])=>{ctx.fillStyle=c;ctx.globalAlpha=.13;ctx.fillRect(x,SOY+SN*SC+44,W/2,H-(SOY+SN*SC+44)-52);ctx.globalAlpha=1;txt(l,x+W/4,SOY+SN*SC+110,'900 15px Quicksand,sans-serif',c);});
-   ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=2;ctx.setLineDash([6,8]);ctx.beginPath();ctx.moveTo(W/2,SOY+SN*SC+44);ctx.lineTo(W/2,H-56);ctx.stroke();ctx.restore();
-   txt('Toca la mitad izquierda o derecha de la pantalla',240,SOY+SN*SC+54,'600 12px Quicksand,sans-serif','#cdb6ea');}
-  else txt('Desliza el dedo en la dirección que quieras',240,590,'600 14px Quicksand,sans-serif','#cdb6ea');
-  ctx.fillStyle='#2a1346';rr(150,724,180,28,14);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=1.5;ctx.stroke();txt('Control: '+(snakeCtl==='swipe'?'Deslizar ⇄':'Mitades ⇄'),240,743,'700 12px Quicksand,sans-serif','#fff');hits.push({x:150,y:724,w:180,h:28,id:'sctl'});}
- else{sBtn(205,560,'▲','sU');sBtn(125,620,'◀','sL');sBtn(205,620,'▼','sD');sBtn(285,620,'▶','sR');}
+ if(snakeCtl!=='swipe'){ctx.save();const act2=(x,y)=>{if(!(lastPtr==='touch'||mouseX>0))return '';return sXZone(x,y);};
+  const zs=[['U','ARRIBA',240,172,'#4cc9ff'],['L','IZQUIERDA',64,XY,'#ff9f43'],['R','DERECHA',416,XY,'#06d6a0'],['D','ABAJO',240,640,'#ff5d8f']],hv=sTouchZone;
+  ctx.globalAlpha=.1;zs.forEach(([k,l,x,y,c])=>{ctx.fillStyle=c;ctx.beginPath();if(k==='U'){ctx.moveTo(XC,XY);ctx.lineTo(0,XT);ctx.lineTo(W,XT);}else if(k==='D'){ctx.moveTo(XC,XY);ctx.lineTo(0,H);ctx.lineTo(W,H);}else if(k==='L'){ctx.moveTo(XC,XY);ctx.lineTo(0,XT);ctx.lineTo(0,H);}else{ctx.moveTo(XC,XY);ctx.lineTo(W,XT);ctx.lineTo(W,H);}ctx.closePath();ctx.fill();if(hv===k){ctx.globalAlpha=.3;ctx.fill();ctx.globalAlpha=.1;}});
+  ctx.globalAlpha=.55;ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,XT);ctx.lineTo(W,H);ctx.moveTo(W,XT);ctx.lineTo(0,H);ctx.stroke();ctx.globalAlpha=1;
+  zs.forEach(([k,l,x,y,c])=>txt(l,x,y,'900 '+(k==='L'||k==='R'?15:20)+'px Quicksand,sans-serif',c));ctx.restore();}
+ else txt('Desliza el dedo en la dirección que quieras',240,590,'600 14px Quicksand,sans-serif','#cdb6ea');
+ ctx.fillStyle='#2a1346';rr(150,724,180,28,14);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=1.5;ctx.stroke();txt('Control: '+(snakeCtl==='swipe'?'Deslizar ⇄':'Pantalla en X ⇄'),240,743,'700 12px Quicksand,sans-serif','#fff');hits.push({x:150,y:724,w:180,h:28,id:'sctl'});
  [[404,'⏸','pause'],[448,muted?'🔇':'🔊','mute']].forEach(([x,t,id])=>{ctx.fillStyle='#2a1346';ctx.beginPath();ctx.arc(x,28,17,0,TAU);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.stroke();txt(t,x,34,'16px sans-serif','#fff');hits.push({x:x-17,y:11,w:34,h:34,id});});drawBanner();}
