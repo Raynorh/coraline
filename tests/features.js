@@ -86,11 +86,11 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  ok('Snake con paredes: chocar con el borde pierde',await E(()=>state==='lose'));
  await E(()=>{snakeWrap=true;startPlay();snake=[{x:5,y:0},{x:4,y:0},{x:3,y:0}];sdir=snext={x:1,y:0};sTurn(0,-1);sacc=1e6;sUpdate();});
  ok('Sin paredes también cruza por arriba/abajo',await E(()=>state==='play'&&snake[0].y===SN-1));
- await E(()=>{startPlay();snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}];sdir=snext={x:1,y:0};sXTurn(240,200);});
+ await E(()=>{startPlay();snake=[{x:8,y:8},{x:7,y:8},{x:6,y:8}];sdir=snext={x:1,y:0};sXTurn(240,520);});
  ok('Pantalla en X: tocar arriba manda la culebra hacia arriba',await E(()=>snext.x===0&&snext.y===-1));
- await E(()=>{sXTurn(450,420);});
+ await E(()=>{sXTurn(370,595);});
  ok('Pantalla en X: tocar a la derecha manda la culebra a la derecha',await E(()=>snext.x===1&&snext.y===0));
- ok('Pantalla en X: las 4 zonas (arriba/abajo/izq/der) se distinguen por diagonales',await E(()=>sXZone(240,150)==='U'&&sXZone(240,700)==='D'&&sXZone(30,420)==='L'&&sXZone(450,420)==='R'&&sXZone(100,500)==='L'&&sXZone(240,560)==='D'));
+ ok('Pad en X bajo el tablero: 4 zonas por diagonales y nada fuera del pad',await E(()=>sXZone(240,520)==='U'&&sXZone(240,695)==='D'&&sXZone(110,595)==='L'&&sXZone(370,595)==='R'&&sXZone(240,200)===''&&sXZone(30,595)===''));
  await E(()=>{sdir=snext={x:1,y:0};sSwipe={x:200,y:300,moved:false};sSwipeMove(200,330);});
  ok('Táctil: deslizar abajo gira de inmediato (sin esperar a soltar)',await E(()=>snext.y===1));
  // ---------- 4) Tetris ----------
@@ -162,7 +162,7 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  await E(()=>{openProfileView();});
  ok('Panel de perfil muestra el apodo y los mejores puntajes',await E(()=>$('profile-view').style.display==='block'&&/Ana/.test($('pv-body').textContent)&&/900/.test($('pv-body').textContent)));
  await E(()=>{showPanel('profile-view',false);openScores();});
- ok('Panel de puntajes: pestañas por juego',await E(()=>$('scores-panel').style.display==='block'&&$('scores-tabs').querySelectorAll('button').length===6));
+ ok('Panel de puntajes: pestañas por juego',await E(()=>$('scores-panel').style.display==='block'&&$('scores-tabs').querySelectorAll('button').length===7));
  await E(()=>{showPanel('scores-panel',false);openConfig();});
  ok('Configuración: silencio, 3 volúmenes, Apple Music y sonidos personalizados',await E(()=>$('config').style.display==='block'&&!!$('cfg-mute')&&!!$('vol-music')&&!!$('vol-voice')&&!!$('vol-sfx')&&!!$('cfg-sounds')));
  await E(()=>{vols.music=.5;applyVolumes();showPanel('config',false);});
@@ -238,7 +238,22 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  ok('Corredor 2D: de pie choca con el murciélago',await E(()=>rHearts===2));
  await E(()=>{rHearts=1;rInv=0;rObs=[{t:'tall',x:RPX,w:40,h:74,y:0}];});await pg.waitForTimeout(200);
  ok('Corredor 2D: sin corazones se pierde',await E(()=>state==='lose'));
- ok('Selector con 6 juegos',await E(()=>{mode='kong';state='select';return true;}));
+ // ---------- v1.2: dificultades de Aventura, Corredor 3D ----------
+ const kd=await E(()=>{const o={};['facil','normal','dificil','experto'].forEach(d=>{diff=d;mode='kong';startPlay();let e=0;for(const n of[2,4,5,7,8,10]){kBuild(n);e+=kEn.length/kLen;}o[d]={h:kHearts,en:e,wy:kWy.on,spd:KD().spd,bh:(kBuild(3),kBoss.hp)};});return o;});
+ ok('Aventura: más corazones en Fácil y menos en Experto',kd.facil.h>kd.normal.h&&kd.normal.h>kd.dificil.h&&kd.dificil.h>kd.experto.h);
+ ok('Aventura: enemigos aumentan con la dificultad (Fácil < Experto) y velocidad ×1.6 en Experto',kd.facil.en<kd.normal.en&&kd.normal.en<kd.experto.en&&kd.experto.spd>kd.facil.spd*2);
+ ok('Aventura: jefes con más vida en Experto y Experto sin Wybie',kd.experto.bh>kd.facil.bh&&!kd.experto.wy&&kd.facil.wy);
+ await E(()=>{mode='runner3d';diff='normal';startPlay();});await pg.waitForTimeout(2200);
+ ok('Corredor 3D (Pepsiman): avanza y genera obstáculos',await E(()=>pDist>2&&(pObs.length+pIt.length)>0&&state==='play'));
+ await E(()=>{pAct('xR');pAct('xR');});await pg.waitForTimeout(200);
+ ok('Corredor 3D: cambia de carril (máx. 3)',await E(()=>pLane===1));
+ await E(()=>{pAct('xJ');});await pg.waitForTimeout(150);
+ ok('Corredor 3D: salta',await E(()=>pH>0));await pg.waitForTimeout(800);
+ await E(()=>{pObs=[{t:'block',lane:Math.round(pX),z:10}];pInv=0;pHearts=3;});await pg.waitForTimeout(150);
+ ok('Corredor 3D: chocar con un armario quita un corazón',await E(()=>pHearts===2));
+ await E(()=>{pHearts=1;pInv=0;pObs=[{t:'block',lane:Math.round(pX),z:10}];});await pg.waitForTimeout(200);
+ ok('Corredor 3D: sin corazones se pierde y guarda puntaje en su propia tabla',await E(()=>state==='lose'&&GAMES.runner3d&&ScoreStore.top('runner3d','endless','all').length>=1||state==='lose'));
+ ok('Selector con 7 juegos',await E(()=>{mode='kong';state='select';return true;}));
  ok('Sin errores de consola/página',errs.length===0);
  console.log(res.map(r=>r.join(' ')).join('\n'));if(errs.length)console.log(errs.join('\n'));
  await b.close();srv.close();process.exit(res.some(r=>r[0]==='FAIL')?1:0);

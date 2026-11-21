@@ -8,7 +8,8 @@ const GAMES={
  blocks:{n:'Bloques',ico:'🔷',modes:{classic:'Clásico'}},
  snake:{n:'Snake',ico:'🐍',modes:{walls:'Con paredes',wrap:'Sin paredes'}},
  kong:{n:'Aventura',ico:'🌲',modes:{story:'Aventura'}},
- runner:{n:'Corredor',ico:'🏃',modes:{endless:'Sin fin'}}};
+ runner:{n:'Corredor 2D',ico:'🏃',modes:{endless:'Sin fin'}},
+ runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}}};
 const DIFF_NAMES={facil:'Fácil',normal:'Normal',dificil:'Difícil',experto:'Experto'};
 // Modo de juego actual (clave estable que se guarda junto al puntaje).
 function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':'endless';}
@@ -45,5 +46,6 @@ function loseLines(){
  if(mode==='bubble'&&bubbleMode==='endless')return['Rescataste '+savedTotal+' ratoncitos en total',pts];
  if(mode==='bubble')return['Nivel '+bubbleLevel+' · rescataste '+rescued+' de '+bMice+' ratoncitos',pts];
  if(mode==='kong')return['Nivel '+kLevelNo+' · 🐱 '+kCats+' gatitos en este nivel · 🐭 '+kMice+' ratoncitos rescatados',pts];
+ if(mode==='runner3d')return[Math.floor(pDist)+' m recorridos · '+pButtons+' botones · zona '+pStage,pts];
  if(mode==='runner')return[Math.floor(rDist)+' m recorridos · '+rButtons+' botones · zona '+rStage,pts];
  return[pts];}

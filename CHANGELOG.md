@@ -1,5 +1,10 @@
 # CHANGELOG — Coraline
 
+## v1.2.0 — 2026-11-21 (96 pruebas automáticas OK)
+**Aventura** — las dificultades ahora se sienten distintas: Fácil (5 corazones, pocos enemigos y lentos, sin carretes hasta el nivel 4, murciélagos desde el 5, menos agujas y huecos cortos, más cajas con hongos, 10 botones de munición, jefes más fáciles, más tiempo de invulnerabilidad) · Normal · Difícil (3 corazones, más enemigos ×1.3 de velocidad, trampas dobles, menos cajas, jefes con +2 de vida) · Experto (2 corazones, muchísimos enemigos ×1.6 de velocidad, huecos de hasta 4, pocas cajas, jefes +4 de vida y más rápidos, sin Wybie).
+**Corredor 3D** — vuelve el corredor de 3 carriles estilo Pepsiman como juego propio (🏁 Corredor 3D), con su tabla de puntajes; el Corredor 2D (dinosaurio) se mantiene aparte. Ahora son 7 juegos.
+**Snake** — los botones ya no ocupan toda la pantalla: el pad en X (ARRIBA / IZQ. / DER. / ABAJO) está solo debajo del tablero y lo que se toca fuera del pad no hace nada.
+
 ## v1.1.0 — 2026-11-20 (correcciones tras la prueba de Carolina; 95 pruebas automáticas OK)
 **Burbujas** — ARREGLADO el congelamiento: la mira usaba el color del botón cargado y el disparo 🌈 arcoíris no tiene color, lo que hacía fallar el dibujado en cada cuadro. Además el bucle principal ahora captura errores para que ningún fallo pueda congelar el juego. Nuevo botón ❓ con la **leyenda de poderes** y botones especiales (se abre sola la primera vez que llegas a un nivel con especiales). La **Piedra verde** en Niveles ahora es 🌈 *Lluvia de color* (elimina todos los botones del color que tienes cargado; en Sin fin sigue colocando un botón). Se puede **cancelar el apuntado**: arrastra a la franja roja inferior y suelta.
 **Snake** — control en X como el dibujo: la pantalla se divide con dos diagonales en ARRIBA / IZQUIERDA / DERECHA / ABAJO (direcciones absolutas, se ven en pantalla). Sigue disponible «Deslizar».

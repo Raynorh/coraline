@@ -15,7 +15,7 @@ create table if not exists public.profiles (
 create table if not exists public.scores (
   id uuid primary key default gen_random_uuid(),
   profile_id uuid not null references public.profiles(id) on delete cascade,
-  game text not null check (game in ('bubble','tetris','blocks','snake','kong','runner')),
+  game text not null check (game in ('bubble','tetris','blocks','snake','kong','runner','runner3d')),
   mode text not null,                                    -- levels|endless|rescue|classic|walls|wrap|story
   diff text not null check (diff in ('facil','normal','dificil','experto')),
   score integer not null check (score >= 0),
