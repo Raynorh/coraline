@@ -35,7 +35,7 @@ function migrateScoresV3(){try{if(localStorage.getItem('coraline_scores_migrated
  ScoreStore.save(l);localStorage.setItem('coraline_scores_migrated_v3','1');}catch(e){}}
 migrateScoresV3();
 function recordScore(extra){if(scoreRecorded)return;scoreRecorded=true;const sc=Math.floor(Number(score)||0);if(sc<=0)return;
- ScoreStore.add(Object.assign({id:newId(),profileId:profile?profile.id:LEGACY_PROFILE_ID,nickname:profile?profile.nickname:'Jugador',game:mode,mode:modeKey(),diff:diff,score:sc,level:null,createdAt:new Date().toISOString()},extra||{}));}
+ {const e=Object.assign({id:newId(),profileId:profile?profile.id:LEGACY_PROFILE_ID,nickname:profile?profile.nickname:'Jugador',game:mode,mode:modeKey(),diff:diff,score:sc,level:null,createdAt:new Date().toISOString()},extra||{});ScoreStore.add(e);try{SB.add(e);}catch(_){}}}
 function modeLabel(){const G=GAMES[mode];return G?G.n+' · '+G.modes[modeKey()]:mode;}
 // Texto de la pantalla de derrota según el modo.
 function loseLines(){

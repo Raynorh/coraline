@@ -85,6 +85,7 @@ function drawBomb(x,y){ctx.save();ctx.fillStyle='#1a1226';ctx.beginPath();ctx.ar
  ctx.strokeStyle='#cdb6ea';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x+4,y-R+3);ctx.quadraticCurveTo(x+10,y-R-5,x+17,y-R+1);ctx.stroke();
  const fl=.6+.4*Math.sin(tick*.5);ctx.fillStyle='rgba(255,209,102,'+fl+')';ctx.shadowColor='#ff9f43';ctx.shadowBlur=10;ctx.beginPath();ctx.arc(x+17,y-R+1,5,0,TAU);ctx.fill();ctx.restore();}
 function drawHUD(){ctx.fillStyle='rgba(10,5,20,.9)';ctx.fillRect(0,0,W,TOP-6);ctx.fillStyle='#9b5de566';ctx.fillRect(0,TOP-7,W,2);
+ if(mode==='bubble'){const re=RISE_EVERY[dIdx()],f=Math.min(1,riseCnt/re),hot=riseCnt>=re-1;ctx.fillStyle=hot?(tick%20<10?'#ff5d8f':'#ff9f43'):'#ffd166';ctx.fillRect(0,TOP-8,W*f,4);}
  const clasicT=mode==='tetris'&&tetrisMode==='classic';
  if(!clasicT)txt('🐭 '+rescued+'/'+(mode==='bubble'?bMice:MICE0),14,34,'700 17px Quicksand,sans-serif','#fff','left');
  txt('⭐ '+score,130,34,'700 17px Quicksand,sans-serif','#ffd166','left');

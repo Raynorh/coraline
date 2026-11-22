@@ -12,7 +12,8 @@ const bPops=[];
 let bTime=0,bBest=0,bHints=1,bSwaps=1,bHintTarget=null,bPressure=0,bPressureMsg=false;
 // Mejor puntaje previo de este perfil en Bloques (para el reto "a punto de superar el récord").
 function bBestScore(){try{const list=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');return list.filter(v=>v&&v.mode==='Bloques'&&(!profile||v.profileId===profile.id)).reduce((m,v)=>Math.max(m,Number(v.score)||0),0);}catch(e){return 0;}}
-function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
+const B_START=[0,0,8,16];// botones sueltos que ya hay al empezar
+function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0;k<B_START[dIdx()];k++){let t=0,x,y;do{x=ri(BC);y=ri(BC);t++;}while(t<40&&bgrid[y][x]!==-1);bgrid[y][x]=ri(7);}bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
  bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bHintTarget=null;bPressure=0;bPressureMsg=false;
  score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];clearTimeout(endTimer);endTimer=null;bpieces=bDeal();
  say('Coraline',bBest>0?'Tu récord es '+bBest.toLocaleString('es-CL')+'. ¡Vamos a superarlo!':'Arrastra los botones al tablero. Completa líneas y encadena combos.',3600);}

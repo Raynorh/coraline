@@ -124,9 +124,9 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  ok('Disparar la bomba no gasta botones y consume la carga',await E(()=>proj&&proj.bomb&&ammo===bAmmo0&&bomb===0&&!bombArmed));
  await pg.waitForTimeout(1500);
  ok('La bomba explota al impactar (el juego sigue sin errores)',await E(()=>proj===null));
- await E(()=>{bubbleMode='endless';startPlay();rescued=MICE0;ammo=5;afterShot();});await pg.waitForTimeout(1500);
- const rs=await E(()=>({state,sec:bubbleSec,mice:grid.flat().filter(b=>b&&b.mouse).length,ammo,sc:scrollOff}));
- ok('Rescate sin fin: al liberar todos se despliega un escenario nuevo con más ratoncitos y más botones',rs.state==='play'&&rs.sec===2&&rs.mice===6&&rs.ammo>5);
+ await E(()=>{bubbleMode='endless';startPlay();rescued=bMice;ammo=5;afterShot();});await pg.waitForTimeout(1500);
+ const rs=await E(()=>({state,sec:bubbleSec,mice:grid.flat().filter(b=>b&&b.mouse).length,left:miceLeft,bm:bMice,ammo,sc:scrollOff}));
+ ok('Rescate sin fin: al liberar todos se despliega un escenario nuevo con más ratoncitos y más botones',rs.state==='play'&&rs.sec===2&&rs.mice+rs.left===rs.bm&&rs.bm>=7&&rs.ammo>5);
  ok('Mientras baja el escenario nuevo no se puede disparar (animación)',await E(()=>{const a=scrollOff>1;const before=ammo;shoot();return a&&ammo===before&&proj===null;}));
  await pg.waitForTimeout(2200);
  ok('Colocación directa (piedra) sigue disponible como 2º poder',await E(()=>{stone=100;updateStoneBtn();activateMagic();return armed===true;}));
@@ -142,7 +142,16 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  await E(()=>{mode='tetris';tetrisMode='classic';startPlay();lose();});await pg.waitForTimeout(900);
  ok('Al perder aparece la Otra Madre con el mensaje (estado lose + banner)',await E(()=>state==='lose'&&banner.who==='Otra Madre'&&/ahora eres mía/.test(banner.txt)));
  await pg.screenshot({path:'/tmp/claude-0/mother-lose.png'});
- // ---------- v1.1: congelamiento arcoíris, leyenda, cancelar, piedra ----------
+ // ---------- v1.3: dificultad notable en todos los modos ----------
+ok('Dificultad notable en todos los modos (Burbujas, Tetris, Snake, Bloques, Corredores)',await E(()=>{const inc=a=>a.every((v,i)=>i===0||v>a[i-1]),dec=a=>a.every((v,i)=>i===0||v<a[i-1]);
+ const ks=['facil','normal','dificil','experto'];const lv=ks.map(d=>{diff=d;return levelDef(5);});
+ return dec(RISE_EVERY)&&dec(lv.map(l=>l.ammo))&&lv[3].mice>lv[0].mice&&inc(lv.map(l=>l.iron+l.ice))&&dec(ks.map(d=>DIFF[d].t))&&dec(ks.map(d=>DIFF[d].sv))&&SN_OBS[3]>SN_OBS[2]&&SN_OBS[2]>SN_OBS[0]&&B_START[3]>B_START[1]&&inc(R_V0)&&inc(P_V0)&&DIFF.experto.t<DIFF.facil.t/2&&DIFF.experto.sv<DIFF.facil.sv/2;}));
+// ---------- v1.3: techo que baja + 6 ratones mínimo ----------
+await E(()=>{mode='bubble';bubbleMode='levels';diff='normal';bubbleLevel=1;startPlay();});
+ok('Burbujas: cada nivel tiene al menos 6 ratoncitos por rescatar',await E(()=>bMice>=6&&miceOnBoard()+miceLeft===bMice));
+const rz=await E(()=>{const m0=miceOnBoard(),l0=miceLeft;const lost=bubbleRise();return{lost,rows:grid.length,m1:miceOnBoard(),l1:miceLeft,m0,l0,top:grid[0].filter(Boolean).length,so:scrollOff>0};});
+ok('El techo baja: entran 2 filas nuevas arriba, llegan ratones pendientes y la cuadrícula conserva sus filas',rz.rows===12&&rz.top===9&&rz.so&&rz.m1+rz.l1===rz.m0+rz.l0&&rz.l1<rz.l0);
+// ---------- v1.1: congelamiento arcoíris, leyenda, cancelar, piedra ----------
  await E(()=>{mode='bubble';bubbleMode='levels';diff='normal';bubbleLevel=12;startPlay();cur=RAINBOW;nxt=RAINBOW;});await pg.waitForTimeout(400);
  ok('Arcoíris cargado: el juego sigue dibujando (antes se congelaba)',await E(()=>{const t0=tick;return new Promise(r=>setTimeout(()=>r(tick>t0+5),300));}));
  await E(()=>{aim=-Math.PI/2;shoot();let n=0;while(proj&&n<3000){stepProj();n++;}});
@@ -152,7 +161,7 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  await E(()=>{showPanel('legend',false);startPlay();aiming=true;mouseY=CANCEL_Y+20;});
  await E(()=>{const a=ammo;window.__a=a;const r=cv.getBoundingClientRect();endAim({clientX:r.left+240*r.width/W,clientY:r.top+725*r.height/H,pointerId:1});});
  ok('Cancelar el apuntado (soltar en la franja roja) no dispara',await E(()=>ammo===window.__a&&!proj));
- await E(()=>{startPlay();grid=Array.from({length:ROWS+1},()=>Array(COLS).fill(null));for(let c=0;c<COLS;c++)grid[0][c]={color:1,mouse:false};for(let c=0;c<5;c++)grid[1][c]={color:c%2?2:3,mouse:false};grid[2][2]={color:2,mouse:false};cur=2;stone=100;proj=null;activateMagic();});await pg.waitForTimeout(100);
+ await E(()=>{startPlay();miceLeft=0;grid=Array.from({length:ROWS+1},()=>Array(COLS).fill(null));for(let c=0;c<COLS;c++)grid[0][c]={color:1,mouse:false};for(let c=0;c<5;c++)grid[1][c]={color:c%2?2:3,mouse:false};grid[2][2]={color:2,mouse:false};cur=2;stone=100;proj=null;activateMagic();});await pg.waitForTimeout(100);
  ok('Piedra verde (niveles): Lluvia de color elimina todos los botones del color cargado',await E(()=>!grid.flat().some(b=>b&&b.color===2)&&stone===0));
  // ---------- v0.9/1.0: puntajes, perfil, niveles, juegos nuevos ----------
  await E(()=>{localStorage.removeItem('coraline_scores_v3');});
@@ -189,15 +198,15 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  ok('Ganar el nivel 1: 3 estrellas y se desbloquea el 2',lw.state==='win'&&lw.st===3&&lw.u>=2);
  await E(()=>{mode='kong';diff='normal';startPlay();});
  const kg=await E(()=>({len:kLen,en:kEn.length,it:kItems.length,hearts:kHearts,state,letters:kItems.filter(i=>i.t==='L').length}));
- ok('Aventura: nivel generado con ítems, 4 letras C-O-R-A y 4 corazones (normal)',kg.state==='play'&&kg.len>=60&&kg.it>10&&kg.letters===4&&kg.hearts===4);
+ ok('Aventura: nivel generado con ítems, 8 letras C-O-R-A-L-I-N-E y 4 corazones (normal)',kg.state==='play'&&kg.len>=110&&kg.it>10&&kg.letters===8&&kg.hearts===4);
  await E(()=>{kKeys.r=1;});await pg.waitForTimeout(800);await E(()=>{kKeys.r=0;});
  ok('Aventura: Coraline avanza con el control',await E(()=>kP.x>kRespawn.x+40));
  await E(()=>{kKeys.j=1;});await pg.waitForTimeout(120);
  ok('Aventura: el salto levanta a Coraline',await E(()=>kP.y<kRespawn.y-1||!kP.on));await E(()=>{kKeys.j=0;});
- await E(()=>{kP.x=kDoor-4;});await pg.waitForTimeout(300);
+ await E(()=>{kBar=null;kBarFly=0;kP.x=kDoor-4;kP.y=10;kP.vy=0;});await pg.waitForTimeout(300);
  ok('Aventura: llegar a la puerta gana el nivel y guarda el puntaje',await E(()=>state==='win'&&ScoreStore.top('kong','story','all').length>=1));
  await E(()=>{act('nextk');});
- ok('Aventura: el siguiente nivel es más largo',await E(()=>state==='play'&&kLevelNo===2&&kLen>66+9));
+ ok('Aventura: el siguiente nivel es más largo',await E(()=>state==='play'&&kLevelNo===2&&kLen>110+14));
  await E(()=>{kLevelNo=1;kBuild(1);kP.big=0;kWy.on=true;kInv=0;kHurt();});
  ok('Aventura: Wybie absorbe el primer golpe (no pierdes corazón)',await E(()=>!kWy.on&&kHearts===4));
  await E(()=>{kInv=0;kP.big=1;kP.h=44;kHurt();});
@@ -208,8 +217,22 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  ok('Aventura: lanzar botón gasta munición y crea proyectil',await E(()=>kAmmo===2&&kShots.length===1));
  await E(()=>{kBuild(1);kEn=[{t:'w',x:kP.x+60,y:kP.y,w:28,h:34,vx:0,dead:0,x0:0,x1:9999,stun:0}];kAmmo=3;kAtkCD=0;kP.face=1;kAction('a');});await pg.waitForTimeout(500);
  ok('Aventura: el botón lanzado derrota al muñeco',await E(()=>kEn.length===0));
- await E(()=>{kBuild(1);kWy.on=true;kWy.cd=0;kEn=[{t:'w',x:kP.x+100,y:kP.y,w:28,h:34,vx:-1,dead:0,x0:0,x1:9999,stun:0}];kAction('w');});
+ await E(()=>{kBuild(1);kWy.on=true;kWy.cd=0;kChar='w';kEn=[{t:'w',x:kP.x+100,y:kP.y,w:28,h:34,vx:-1,dead:0,x0:0,x1:9999,stun:0}];kAction('a');});
  ok('Aventura: la linterna de Wybie aturde y entra en recarga',await E(()=>kEn[0].stun>0&&kWy.cd>0));
+ await E(()=>{kBuild(1);kChar='c';kWy.on=true;kSwCD=0;kAction('w');});
+ ok('Aventura: el botón CAMBIAR alterna entre Coraline y Wybie',await E(()=>kChar==='w'));
+ await E(()=>{kSwCD=0;kAction('w');});
+ ok('Aventura: y vuelve a Coraline',await E(()=>kChar==='c'));
+ await E(()=>{kBuild(1);kWy.on=false;kChar='c';kSwCD=0;kAction('w');});
+ ok('Aventura: sin compañero no se puede cambiar',await E(()=>kChar==='c'));
+ await E(()=>{kBuild(1);kChar='w';kWy.on=true;kP.on=false;kP.vy=0;kKeys.j=1;});await pg.waitForTimeout(150);
+ ok('Aventura: Wybie planea (cae lento mientras mantienes saltar)',await E(()=>{kP.y=100;kP.vy=8;return true;})&&await new Promise(r=>setTimeout(()=>r(true),60))&&await E(()=>kP.vy<=2.2));
+ await E(()=>{kKeys.j=0;kChar='c';});
+ await E(()=>{kBuild(1);kP.x=300;kP.face=1;kP.vx=0;kEn=[{t:'w',x:kP.x+60,y:kP.y,w:28,h:34,vx:0,dead:0,x0:0,x1:9999,stun:0}];kP.on=true;kRollCD=0;kRunPrev=false;kKeys.c=1;});await pg.waitForTimeout(500);await E(()=>{kKeys.c=0;});
+ ok('Aventura (DKC): RODAR derrota enemigos al contacto',await E(()=>kEn.length===0));
+ const bz=await E(()=>{kBuild(1);kChar='c';kInv=0;const b={x:600,y:300,cool:0,t:0,ang:-.85};kBarrels=[b];kP.x=b.x+8;kP.y=b.y+6;kStep();const inside=kBar===b;kJBuf=8;for(let i=0;i<20;i++){b.t=Math.max(b.t,15);kJBuf=8;kStep();if(!kBar)break;}return{inside,out:kBar===null,fly:kBarFly>0,vx:kP.vx,vy:kP.vy};});
+ ok('Aventura (DKC): el barril cañón captura, apunta y dispara a Coraline',bz.inside&&bz.out&&bz.fly&&bz.vx>5&&bz.vy<-5);
+ ok('Aventura (DKC): mundos con barriles, racimos y globos en niveles largos',await E(()=>{let b=0,B=0,H=0;for(let n=1;n<=12;n++){kBuild(n);b+=kBarrels.length;B+=kItems.filter(i=>i.t==='B').length;H+=kItems.filter(i=>i.t==='H').length;}return b>0&&B>0&&H>0;}));
  await E(()=>{kBuild(1);kCages[0].x=kP.x;kCages[0].y=kP.y;});await pg.waitForTimeout(150);
  ok('Aventura: tocar una jaula rescata un gatito',await E(()=>kCats>=1));
  await E(()=>{kBuild(3);});

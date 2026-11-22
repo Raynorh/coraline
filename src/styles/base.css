@@ -34,6 +34,7 @@
 
   #profiles .chip,#scores-panel .chip,#config .chip,#profile-view .chip{display:inline-block;width:auto;margin:3px;padding:6px 12px;border-radius:14px;font-size:13px}
   #scores-panel .chip.on{border-color:#06d6a0;background:#06705a}
+  #config input[type=url],#config input[type=text]{display:block;width:100%;box-sizing:border-box;margin:6px 0;padding:10px 12px;border-radius:14px;border:2px solid #9b5de5;background:#1a0f2b;color:#fff;font:600 13px Quicksand,sans-serif}
   .cfg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #9b5de533}
   .cfg-row input[type=range]{flex:1;accent-color:#06d6a0}.cfg-row b{width:42px;text-align:right;color:#ffd166}
   .sc-row{display:flex;gap:8px;padding:7px 4px;border-bottom:1px solid #9b5de533;align-items:center}.sc-row.me{background:#06d6a022;border-radius:8px}

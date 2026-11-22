@@ -1,6 +1,6 @@
 # Coraline y el Rescate de los Ratones
 
-Juego HTML5 Canvas (480×760) con cuatro modos: Burbujas, Tetris, Bloques y Snake. Sin dependencias.
+Juego HTML5 Canvas (480×760) con siete juegos: Burbujas, Tetris, Bloques, Snake, Aventura, Corredor 2D y Corredor 3D. Sin dependencias.
 
 ## Comandos
 ```bash
@@ -19,17 +19,27 @@ npm run serve    # servidor local
 - `docs/` arquitectura, auditoría, plan de pruebas, hallazgos de audio, continuidad.
 
 ## Reglas
-`main` no se toca · trabajo en `feature/architecture-refactor` · Supabase fuera de esta fase.
+`main` es lo publicado (GitHub Pages sirve el `index.html` de la raíz; se genera con `npm run release`).
 
 ## Pruebas
 ```bash
 npm test                 # estáticas (build, sintaxis, assets)
 npm i -D playwright && npx playwright install chromium     # una sola vez
 npm run smoke            # arranque y modos
-npm run features         # 47 comprobaciones de v0.8.0
+npm run features         # comprobaciones funcionales (≈115)
+npm run supabase-test    # ranking compartido contra un Supabase simulado
 npm run test:all         # todo junto
 ```
 
 
 ## v1.0.0 — seis juegos
 Burbujas (campaña de 30 niveles + sin fin), Tetris, Bloques, Snake, Aventura (plataformas) y Corredor. Para publicar: `npm run release`, luego `git add -A`, `git commit`, `git push` (un comando por línea en PowerShell).
+
+
+## v1.3.0 — ranking compartido (Supabase)
+1. En Supabase: **SQL Editor → New query**, pega `docs/supabase_setup_v1.3.sql` y pulsa **Run**.
+2. En **Project Settings → API** copia la *Project URL* y la clave pública (*anon* / *publishable*). **Nunca** uses la clave `service_role`.
+3. Pégalas en `src/js/21-supabase.js` (`SB_CONF`) para que todos los dispositivos las usen, o en el juego: ⚙️ Configuración → Ranking en línea (solo ese dispositivo).
+4. `npm run release`, `git add -A`, `git commit`, `git push`.
+5. Cuando Carolina haya jugado una vez, marca su perfil: `update public.profiles set is_special = true where id = '<uuid>';` (verás 💛 junto a su nombre).
+Sin conexión los puntajes quedan en cola y se envían después; sin configurar, el juego funciona igual en local.

@@ -54,11 +54,13 @@ function buildBubbleGrid(sec){const D=DIFF[diff],endless=bubbleMode==='endless';
  const g=Array.from({length:ROWS+1},()=>Array(COLS).fill(null));
  for(let r=0;r<rows;r++)for(let c=0;c<COLS;c++)g[r][c]={color:ri(ncol),mouse:false};
  const cells=[];for(let r=0;r<3;r++)for(let c=0;c<COLS;c++)cells.push([r,c]);
- for(let i=0;i<MICE0;i++){const k=ri(cells.length),[r,c]=cells.splice(k,1)[0];g[r][c].mouse=true;}
+ bMice=Math.min(12,6+(endless?sec-1:0));bNcol=ncol;riseCnt=0;const m0=Math.ceil(bMice/2);
+ for(let i=0;i<m0;i++){const k=ri(cells.length),[r,c]=cells.splice(k,1)[0];g[r][c].mouse=true;}
+ miceLeft=bMice-m0;
  return g;}
 function newGame(){
- bubbleSec=1;savedTotal=0;bomb=0;bombArmed=false;scrollOff=0;bShots=0;bMice=MICE0;grid=buildBubbleGrid(1);
- ammo=DIFF[diff].ammo;if(isLevels()){const L=levelDef(bubbleLevel);grid=buildLevelGrid(L);bMice=L.mice;ammo=L.ammo;bAmmo0=ammo;}
+ bubbleSec=1;savedTotal=0;bomb=0;bombArmed=false;scrollOff=0;bShots=0;riseCnt=0;grid=buildBubbleGrid(1);
+ ammo=DIFF[diff].ammo;if(isLevels()){const L=levelDef(bubbleLevel);grid=buildLevelGrid(L);bMice=L.mice;ammo=L.ammo;bAmmo0=ammo;riseCnt=0;}
  score=0;rescued=0;stone=isLevels()?0:50;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];warned=false;ready100=false;combo=0;
  cur=pickColor();nxt=pickColor();clearTimeout(endTimer);endTimer=null;
  say('Coraline',isLevels()?'Nivel '+bubbleLevel+': rescata '+bMice+' ratoncitos'+(bubbleLevel>=3?'. ¡Cuidado con los botones de hierro, hielo y las bombas!':'.'):'Hola, soy Coraline Jones. Necesito tu ayuda para encontrar todos los ratoncitos del Señor Bobinsky.',5200);

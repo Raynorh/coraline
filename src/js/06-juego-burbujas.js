@@ -30,7 +30,7 @@ function snap(){if(proj&&proj.bomb){const bx=proj.x,by=proj.y;proj=null;bombBlas
  const grp=flood(r,c);
  if(grp.length>=3){combo++;grp.forEach(([a,b],i)=>{popCell(a,b,i);});SFX.pop(Math.min(grp.length,8));
   stone=Math.min(100,stone+grp.length*10);bomb=Math.min(100,bomb+grp.length*4);dropOrphans();}
- else{SFX.stick();combo=0;}
+ else{SFX.stick();combo=0;if(mode==='bubble')riseCnt++;}
  afterShot();}
 function flood(r,c){const col=grid[r][c].color,seen=new Set([r*100+c]),q=[[r,c]],out=[];
  while(q.length){const [a,b]=q.pop();out.push([a,b]);neigh(a,b).forEach(([x,y])=>{const k=x*100+y;
@@ -55,7 +55,9 @@ function afterShot(){
  if(stone>=100&&!ready100){ready100=true;SFX.ready();say('Gato Negro','La Piedra Mágica está lista… pulsa 🔺 o Espacio y toca una casilla vacía.',3000);}
  updateStoneBtn();
  if(ammo===5&&!warned){warned=true;playVoice('peligro');say('Gato Negro','Cuidado, Coraline. Te quedan pocos botones y la Mamá de Botones está mirando.',4600);}
- let lost=false;for(let c=0;c<COLS;c++)if(grid[ROWS][c])lost=true;
+ let lost=false;
+ if(mode==='bubble'&&rescued<bMice&&(riseCnt>=RISE_EVERY[dIdx()]||(miceLeft>0&&miceOnBoard()===0))){if(bubbleRise())lost=true;syncLauncher();}
+ for(let c=0;c<COLS;c++)if(grid[ROWS][c])lost=true;
  if(rescued>=bMice){endTimer=setTimeout(bubbleMode==='endless'?bubbleNext:win,1100);}
  else if(lost){endTimer=setTimeout(lose,700);}
  else if(ammo<=0){endTimer=setTimeout(lose,1200);}

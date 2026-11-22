@@ -4,16 +4,16 @@
    disparo 🌈 arcoíris (toma el color que más grupo forme). Los niveles se generan con semilla: siempre son los mismos. */
 const MAXLV=30,RAINBOW=-2,IRON=-1;
 function seeded(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-const BDIFF={facil:{ammo:8,col:-1,spec:.6},normal:{ammo:3,col:0,spec:1},dificil:{ammo:-1,col:0,spec:1.2},experto:{ammo:-4,col:1,spec:1.4}};
+const BDIFF={facil:{ammo:10,col:-1,spec:.5,mice:0},normal:{ammo:3,col:0,spec:1,mice:0},dificil:{ammo:-2,col:0,spec:1.4,mice:1},experto:{ammo:-8,col:1,spec:1.9,mice:2}};
 function levelDef(n){const bd=BDIFF[diff]||BDIFF.normal;
  const rows=Math.min(9,4+Math.floor((n+1)/3)),ncol=Math.max(3,Math.min(6,3+Math.floor(n/5)+bd.col));
- const mice=Math.min(9,3+Math.floor(n/3)),s=bd.spec;
+ const mice=Math.min(14,6+Math.floor(n/3)+bd.mice),s=bd.spec;
  return{n,rows,ncol,mice,pattern:n%4,
   iron:n>=3?Math.min(10,Math.round((1+(n-3)*.5)*s)):0,
   ice:n>=5?Math.min(12,Math.round((2+(n-5)*.55)*s)):0,
   bombs:n>=4?Math.min(4,1+Math.floor(n/7)):0,
   bolts:n>=7?Math.min(3,1+Math.floor((n-7)/8)):0,
-  ammo:Math.max(14,Math.round(DIFF[diff].ammo*.85)+bd.ammo+4-Math.floor(n*.35)+Math.round(mice*1.2))};}
+  ammo:Math.max(30,Math.round(DIFF[diff].ammo*.85)+bd.ammo+4-Math.floor(n*.35)+Math.round(mice*2.8))};}
 function buildLevelGrid(L){const rnd=seeded(L.n*7919+dIdx()*131),g=Array.from({length:ROWS+1},()=>Array(COLS).fill(null));
  const rI=k=>Math.floor(rnd()*k);
  for(let r=0;r<L.rows;r++)for(let c=0;c<COLS;c++){
@@ -28,19 +28,32 @@ function buildLevelGrid(L){const rnd=seeded(L.n*7919+dIdx()*131),g=Array.from({l
  const cells=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(g[r][c]&&!seen.has(r*100+c))g[r][c]=null;else if(g[r][c])cells.push([r,c]);}
  const take=(pred)=>{const pool=cells.filter(([r,c])=>pred(r,c)&&!g[r][c].mouse&&!g[r][c].kind&&g[r][c].color>=0);if(!pool.length)return null;const k=rI(pool.length);return pool[k];};
  const maxR=L.rows-1;
- for(let i=0;i<L.mice;i++){const p=take((r)=>r<=Math.max(2,maxR-1));if(p)g[p[0]][p[1]].mouse=true;}
+ const m0=Math.ceil(L.mice/2);for(let i=0;i<m0;i++){const p=take((r)=>r<=Math.max(2,maxR-1));if(p)g[p[0]][p[1]].mouse=true;}
  for(let i=0;i<L.iron;i++){const p=take((r)=>r>=2);if(p){const o=g[p[0]][p[1]];o.kind='iron';o.color=IRON;}}
  for(let i=0;i<L.ice;i++){const p=take((r)=>r>=1);if(p)g[p[0]][p[1]].kind='ice';}
  for(let i=0;i<L.bombs;i++){const p=take((r)=>r>=1);if(p)g[p[0]][p[1]].kind='bomb';}
  for(let i=0;i<L.bolts;i++){const p=take((r)=>r>=1);if(p)g[p[0]][p[1]].kind='bolt';}
  // el hierro no cuenta como ratón; si por azar quedaron menos ratones, ajustar la meta
- let m=0;g.forEach(row=>row.forEach(b=>{if(b&&b.mouse)m++;}));L.mice=Math.max(1,m);
+ let m=0;g.forEach(row=>row.forEach(b=>{if(b&&b.mouse)m++;}));miceLeft=Math.max(0,L.mice-m);bNcol=L.ncol;
  return g;}
 // ---- progreso por perfil (listo para migrar a Supabase: una fila por perfil+nivel) ----
 const bpKey=()=>'cor_bprog_'+(profile?profile.id:'invitado');
 function bubbleProg(){try{const p=JSON.parse(localStorage.getItem(bpKey())||'null');if(p&&p.stars)return p;}catch(e){}return{unlocked:1,stars:{}};}
 function saveBubbleProg(p){try{localStorage.setItem(bpKey(),JSON.stringify(p));}catch(e){}}
-let bAmmo0=0,bShots=0,bLevelStars=0;
+let bAmmo0=0,bShots=0,bLevelStars=0,miceLeft=0,bNcol=4,riseCnt=0;
+const RISE_EVERY=[10,8,7,5];
+// ---- v1.3.0: el techo baja como en Panda Pop. Cada vez que fallas (disparo sin explotar) se acerca la subida;
+// al llegar al límite entran DOS filas nuevas arriba (de a dos para conservar la geometría hexagonal) y con ellas
+// llegan los ratoncitos que faltan por rescatar. ----
+function miceOnBoard(){let n=0;grid.forEach(row=>row.forEach(b=>{if(b&&b.mouse)n++;}));return n;}
+function bubbleRise(){const n=isLevels()?bubbleLevel:0,rows=[Array(COLS).fill(null),Array(COLS).fill(null)];
+ for(let r=0;r<2;r++)for(let c=0;c<COLS;c++){if(r===1&&Math.random()<.1)continue;
+  const b={color:ri(bNcol),mouse:false};if(r===1&&n>=3&&Math.random()<.06){b.kind='iron';b.color=IRON;}else if(r===1&&n>=5&&Math.random()<.1)b.kind='ice';rows[r][c]=b;}
+ const k=miceLeft>0?Math.min(miceLeft,1+ri(2)):0;
+ for(let i=0;i<k;i++){const pool=[];rows.forEach((row,r)=>row.forEach((b,c)=>{if(b&&b.color>=0&&!b.mouse&&!b.kind)pool.push(b);}));if(pool.length)pool[ri(pool.length)].mouse=true;}
+ miceLeft-=k;grid=rows.concat(grid);const gone=grid.splice(ROWS+1,2);
+ scrollOff=2*ROWH;riseCnt=0;SFX.fall();floats.push({x:240,y:TOP+90,txt:'⏫ ¡EL TECHO BAJA!'+(k?' 🐭×'+k:''),life:70,c:'#ff9f43'});
+ return gone.some(row=>row.some(b=>b));}
 const isLevels=()=>mode==='bubble'&&bubbleMode==='levels';
 function levelStars(){const f=bAmmo0?ammo/bAmmo0:0;return f>=.4?3:f>=.15?2:1;}
 function levelWon(){const p=bubbleProg();bLevelStars=levelStars();p.stars[bubbleLevel]=Math.max(p.stars[bubbleLevel]||0,bLevelStars);p.unlocked=Math.max(p.unlocked,Math.min(MAXLV,bubbleLevel+1));saveBubbleProg(p);

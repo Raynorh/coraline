@@ -24,9 +24,9 @@
     <div style="text-align:center"><button id="settings-close">Volver</button></div></div>
   <div id="modal">
     <h2>Historia y Personajes</h2>
-    <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>6 ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
-    <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a los 6 ratoncitos antes de quedarte sin los <b>25 botones</b> de munición.</p>
-    <p><b>Seis juegos:</b> Burbujas, Tetris, Bloques, Snake, Aventura y Corredor. Elige la dificultad antes de entrar. En Bloques puedes usar botones redondos o cuadrados.</p>
+    <p>En las profundidades del <b>Otro Mundo</b>, la <b>Mamá de Botones</b> tejió en el techo una trampa gigante de botones encantados para encerrar a los <b>ratoncitos saltarines</b> del circo del Señor Bobinsky. Su música y acrobacias son la carnada para atraer a Coraline de vuelta a su telaraña.</p>
+    <p>Coraline descubrió la trampa y, con un cañón forjado con la <b>Piedra Triangular Verde</b> con agujero, dispara botones de colores: forma grupos de <b>3 o más</b> iguales, rompe los hilos, haz caer los botones sueltos y rescata a todos los ratoncitos (¡el techo baja mientras fallas!) antes de quedarte sin los <b>25 botones</b> de munición.</p>
+    <p><b>Siete juegos:</b> Burbujas, Tetris, Bloques, Snake, Aventura, Corredor 2D y Corredor 3D. Elige la dificultad antes de entrar. En Bloques puedes usar botones redondos o cuadrados.</p>
     <h3>🧒 Coraline Jones</h3>Dispara desde la base. Te da la bienvenida y celebra al liberar a todos.
     <h3>🐈‍⬛ El Gato Negro</h3>Guía mágico. Sostiene el siguiente botón, te avisa cuando quedan 5 tiros y canaliza la Piedra Mágica.
     <h3>🎺 Señor Bobinsky</h3>Celebra cada ratoncito libre: <b>+500 puntos</b>.
@@ -55,6 +55,11 @@
     <div class="cfg-row"><span>Música</span><input type="range" id="vol-music" min="0" max="100"><b id="vol-music-n"></b></div>
     <div class="cfg-row"><span>Voces</span><input type="range" id="vol-voice" min="0" max="100"><b id="vol-voice-n"></b></div>
     <div class="cfg-row"><span>Efectos</span><input type="range" id="vol-sfx" min="0" max="100"><b id="vol-sfx-n"></b></div>
+    <h3 style="color:#06d6a0;margin:14px 0 4px;font-size:15px">☁️ Ranking en línea (Supabase)</h3>
+    <input id="sb-url" type="url" placeholder="https://tu-proyecto.supabase.co" autocomplete="off" spellcheck="false">
+    <input id="sb-key" type="text" placeholder="Clave pública (anon / publishable)" autocomplete="off" spellcheck="false">
+    <button id="sb-save" type="button">☁️ Guardar y probar conexión</button>
+    <p id="sb-status" class="muted" style="margin:2px 0 8px"></p>
     <button id="cfg-apple" type="button">🎼 Reproducir con Apple Music</button>
     <button id="cfg-sounds" type="button">📦 Sonidos personalizados (.zip / .mp3)</button>
     <button id="config-close" type="button">Volver</button>
@@ -68,6 +73,7 @@
     <div class="lg-row"><b>💣</b><span><b>Botón bomba</b> · al explotar (en un grupo de 3 o más) revienta los botones que tiene alrededor.</span></div>
     <div class="lg-row"><b>⚡</b><span><b>Botón rayo</b> · al explotar limpia toda su fila.</span></div>
     <div class="lg-row"><b>💥</b><span><b>Explosión</b> (botón naranja) · se carga con combos y ratoncitos. Se dispara como bola especial: explota al impactar y no gasta botones. Tecla B.</span></div>
+    <div class="lg-row"><b>⏫</b><span><b>El techo baja</b> · cada disparo que no explota llena la barra de arriba. Al llenarse entran 2 filas nuevas y con ellas los ratoncitos que faltan. ¡Rescátalos todos antes de que lleguen a la línea roja!</span></div>
     <div class="lg-row"><b>🔺</b><span><b>Piedra verde</b> · se carga al explotar botones. En <i>Niveles</i> lanza una <b>🌈 Lluvia de color</b>: elimina TODOS los botones del color que tienes cargado. En <i>Sin fin</i> coloca un botón donde quieras.</span></div>
     <div class="lg-row"><b>⇄</b><span><b>Cambiar</b> · toca al Gato Negro (o tecla C) para intercambiar tu botón con el siguiente.</span></div>
     <div class="lg-row"><b>✋</b><span><b>Cancelar</b> · si ya empezaste a apuntar, arrastra el dedo a la franja roja de abajo y suelta: no se dispara.</span></div>
