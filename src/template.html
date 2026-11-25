@@ -55,11 +55,15 @@
     <div class="cfg-row"><span>Música</span><input type="range" id="vol-music" min="0" max="100"><b id="vol-music-n"></b></div>
     <div class="cfg-row"><span>Voces</span><input type="range" id="vol-voice" min="0" max="100"><b id="vol-voice-n"></b></div>
     <div class="cfg-row"><span>Efectos</span><input type="range" id="vol-sfx" min="0" max="100"><b id="vol-sfx-n"></b></div>
-    <h3 style="color:#06d6a0;margin:14px 0 4px;font-size:15px">☁️ Ranking en línea (Supabase)</h3>
+    <div id="sb-box">
+    <h3 style="color:#06d6a0;margin:14px 0 4px;font-size:15px">☁️ Ranking en línea</h3>
+    <div id="sb-fields">
     <input id="sb-url" type="url" placeholder="https://tu-proyecto.supabase.co" autocomplete="off" spellcheck="false">
     <input id="sb-key" type="text" placeholder="Clave pública (anon / publishable)" autocomplete="off" spellcheck="false">
     <button id="sb-save" type="button">☁️ Guardar y probar conexión</button>
+    </div>
     <p id="sb-status" class="muted" style="margin:2px 0 8px"></p>
+    </div>
     <button id="cfg-apple" type="button">🎼 Reproducir con Apple Music</button>
     <button id="cfg-sounds" type="button">📦 Sonidos personalizados (.zip / .mp3)</button>
     <button id="config-close" type="button">Volver</button>

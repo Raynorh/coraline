@@ -5,7 +5,9 @@ function syncConfig(){const b=$('cfg-mute');if(!b)return;b.textContent=muted?'�
  ['music','voice','sfx'].forEach(k=>{$('vol-'+k).value=Math.round(vols[k]*100);$('vol-'+k+'-n').textContent=Math.round(vols[k]*100)+'%';});}
 function sbStatusText(){if(!SB.on())return'Sin conectar: los puntajes se guardan solo en este dispositivo.';const q=SB.queue().length,s=SB.status;
  return s.startsWith('err:')?'⚠️ No se pudo conectar ('+s.slice(4,90)+'). '+q+' puntajes en espera; se reintenta solo.':'✅ Conectado. '+(q?q+' puntajes por enviar…':'Todo sincronizado.');}
-function openConfig(){syncConfig();const c=SB.cfg(),fixed=!!(SB_CONF.url&&SB_CONF.key);$('sb-url').value=c.url;$('sb-key').value=c.key;$('sb-url').disabled=$('sb-key').disabled=fixed;$('sb-save').style.display=fixed?'none':'block';$('sb-status').textContent=fixed?'Configurado en el juego. '+sbStatusText():sbStatusText();showPanel('config',true);}
+function openConfig(){syncConfig();const c=SB.cfg(),fixed=!!(SB_CONF.url&&SB_CONF.key);$('sb-url').value=c.url;$('sb-key').value=c.key;$('sb-fields').style.display=(!fixed&&location.hash==='#nube')?'block':'none';// los campos solo se ven con #nube y sin conexión integrada
+ if(fixed){$('sb-status').textContent='☁️ Comprobando…';SB.ping().then(r=>{SB.status=r==='ok'?'ok':r;$('sb-status').textContent=r==='ok'?'☁️ Conectado':'⚠️ Sin conexión (se reintentará solo)';});}
+ else $('sb-status').textContent=sbStatusText();showPanel('config',true);}
 $('sb-save').onclick=async()=>{try{localStorage.setItem('cor_sb_conf',JSON.stringify({url:$('sb-url').value.trim(),key:$('sb-key').value.trim()}));localStorage.removeItem('cor_sb_backfill');}catch(e){}
  if(!SB.on()){$('sb-status').textContent='La URL debe verse como https://xxxx.supabase.co y la clave debe estar completa.';return;}
  $('sb-status').textContent='Probando conexión…';const r=await SB.ping();if(r==='ok'){SB.status='ok';SB.backfill();SB.flush();$('sb-status').textContent='✅ Conexión correcta. Tus puntajes se comparten desde ahora.';}

@@ -22,7 +22,7 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
    Object.values(db.scores).filter(s=>s.game===g&&s.mode===m&&(!d||s.diff===d.slice(3))).forEach(s=>{best[s.profile_id]=Math.max(best[s.profile_id]||0,s.score);});
    return json(200,Object.keys(best).map(id=>({profile_id:id,nickname:db.profiles[id].nickname,is_special:db.profiles[id].is_special,best:best[id]})).sort((a,c)=>c.best-a.best));}
   return json(404,{});});
- await pg.goto(url);await pg.waitForTimeout(500);await pg.mouse.click(240,380);await pg.fill('#profile-name','Raynor');await pg.click('#profile-create');await pg.waitForTimeout(200);
+ await pg.goto(url+'#nube');await pg.waitForTimeout(500);await pg.mouse.click(240,380);await pg.fill('#profile-name','Raynor');await pg.click('#profile-create');await pg.waitForTimeout(200);
  ok('Sin configurar: el juego funciona solo en local y no llama a la red',await E(()=>!SB.on())&&log.length===0);
  await E(()=>{mode='snake';startPlay();score=250;scoreRecorded=false;recordScore();});
  ok('Sin Supabase el puntaje se guarda local y no queda cola',await E(()=>ScoreStore.top('snake','walls','all').length===1&&SB.queue().length===0));

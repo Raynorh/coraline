@@ -101,11 +101,15 @@
     <div class="cfg-row"><span>Música</span><input type="range" id="vol-music" min="0" max="100"><b id="vol-music-n"></b></div>
     <div class="cfg-row"><span>Voces</span><input type="range" id="vol-voice" min="0" max="100"><b id="vol-voice-n"></b></div>
     <div class="cfg-row"><span>Efectos</span><input type="range" id="vol-sfx" min="0" max="100"><b id="vol-sfx-n"></b></div>
-    <h3 style="color:#06d6a0;margin:14px 0 4px;font-size:15px">☁️ Ranking en línea (Supabase)</h3>
+    <div id="sb-box">
+    <h3 style="color:#06d6a0;margin:14px 0 4px;font-size:15px">☁️ Ranking en línea</h3>
+    <div id="sb-fields">
     <input id="sb-url" type="url" placeholder="https://tu-proyecto.supabase.co" autocomplete="off" spellcheck="false">
     <input id="sb-key" type="text" placeholder="Clave pública (anon / publishable)" autocomplete="off" spellcheck="false">
     <button id="sb-save" type="button">☁️ Guardar y probar conexión</button>
+    </div>
     <p id="sb-status" class="muted" style="margin:2px 0 8px"></p>
+    </div>
     <button id="cfg-apple" type="button">🎼 Reproducir con Apple Music</button>
     <button id="cfg-sounds" type="button">📦 Sonidos personalizados (.zip / .mp3)</button>
     <button id="config-close" type="button">Volver</button>
@@ -137,7 +141,7 @@
 
 <script>
 'use strict';
-const VERSION='v1.4.1';
+const VERSION='v1.4.3';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const W=480,H=760,R=24,COLS=9,ROWS=11,ROWH=R*Math.sqrt(3),TOP=60,AMMO0=25,MICE0=6;
 const CX=240,CY=655,CANCEL_Y=692; // cañón
@@ -1131,7 +1135,9 @@ function syncConfig(){const b=$('cfg-mute');if(!b)return;b.textContent=muted?'�
  ['music','voice','sfx'].forEach(k=>{$('vol-'+k).value=Math.round(vols[k]*100);$('vol-'+k+'-n').textContent=Math.round(vols[k]*100)+'%';});}
 function sbStatusText(){if(!SB.on())return'Sin conectar: los puntajes se guardan solo en este dispositivo.';const q=SB.queue().length,s=SB.status;
  return s.startsWith('err:')?'⚠️ No se pudo conectar ('+s.slice(4,90)+'). '+q+' puntajes en espera; se reintenta solo.':'✅ Conectado. '+(q?q+' puntajes por enviar…':'Todo sincronizado.');}
-function openConfig(){syncConfig();const c=SB.cfg(),fixed=!!(SB_CONF.url&&SB_CONF.key);$('sb-url').value=c.url;$('sb-key').value=c.key;$('sb-url').disabled=$('sb-key').disabled=fixed;$('sb-save').style.display=fixed?'none':'block';$('sb-status').textContent=fixed?'Configurado en el juego. '+sbStatusText():sbStatusText();showPanel('config',true);}
+function openConfig(){syncConfig();const c=SB.cfg(),fixed=!!(SB_CONF.url&&SB_CONF.key);$('sb-url').value=c.url;$('sb-key').value=c.key;$('sb-fields').style.display=(!fixed&&location.hash==='#nube')?'block':'none';// los campos solo se ven con #nube y sin conexión integrada
+ if(fixed){$('sb-status').textContent='☁️ Comprobando…';SB.ping().then(r=>{SB.status=r==='ok'?'ok':r;$('sb-status').textContent=r==='ok'?'☁️ Conectado':'⚠️ Sin conexión (se reintentará solo)';});}
+ else $('sb-status').textContent=sbStatusText();showPanel('config',true);}
 $('sb-save').onclick=async()=>{try{localStorage.setItem('cor_sb_conf',JSON.stringify({url:$('sb-url').value.trim(),key:$('sb-key').value.trim()}));localStorage.removeItem('cor_sb_backfill');}catch(e){}
  if(!SB.on()){$('sb-status').textContent='La URL debe verse como https://xxxx.supabase.co y la clave debe estar completa.';return;}
  $('sb-status').textContent='Probando conexión…';const r=await SB.ping();if(r==='ok'){SB.status='ok';SB.backfill();SB.flush();$('sb-status').textContent='✅ Conexión correcta. Tus puntajes se comparten desde ahora.';}

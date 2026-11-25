@@ -1,6 +1,6 @@
 {
   "name": "coraline",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "private": true,
   "description": "Coraline y el Rescate de los Ratones — juego HTML5 Canvas (sin dependencias)",
   "scripts": {

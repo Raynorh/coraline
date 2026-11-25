@@ -1,5 +1,8 @@
 # CHANGELOG — Coraline
 
+## v1.4.3 — 2026-11-24
+En Configuración nadie ve campos, URL ni clave de Supabase: solo una línea «☁️ Conectado» (o «Sin conexión»). Los campos solo existen para desarrollo (sin conexión integrada y abriendo el juego con #nube).
+
 ## v1.4.1 — 2026-11-24
 Ranking compartido conectado al proyecto de Supabase de Coraline (clave pública `sb_publishable_…`; la seguridad la dan las reglas RLS del SQL).
 
