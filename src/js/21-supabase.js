@@ -4,13 +4,13 @@
    seguridad la da RLS (ver docs/supabase_setup_v1.3.sql). NUNCA pegues aquí la clave service_role.
    También se puede configurar desde ⚙️ Configuración > Ranking en línea (se guarda solo en ese dispositivo).
    Si no hay conexión los puntajes se guardan en una cola y se envían después; el juego sigue funcionando. */
-const SB_CONF={url:'',key:''};
+const SB_CONF={url:'https://jgtwgxklvcaqyrwgcdux.supabase.co',key:'sb_publishable_IYPk4Bd92Ft7AFWOuLpZ2Q_JMHWi3tx'};
 const SB={
  cfg(){let o={};try{o=JSON.parse(localStorage.getItem('cor_sb_conf')||'{}')||{};}catch(e){}
   const url=String(SB_CONF.url||o.url||'').trim().replace(/\/+$/,''),key=String(SB_CONF.key||o.key||'').trim();return{url,key};},
  on(){const c=this.cfg();return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(c.url)&&c.key.length>20;},
  async req(method,path,body,extra){const c=this.cfg(),ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);
-  try{const r=await fetch(c.url+'/rest/v1/'+path,{method,signal:ctl.signal,headers:Object.assign({apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'},extra||{}),body:body==null?undefined:JSON.stringify(body)});
+  try{const r=await fetch(c.url+'/rest/v1/'+path,{method,signal:ctl.signal,headers:Object.assign(c.key.startsWith('sb_')?{apikey:c.key,'Content-Type':'application/json'}:{apikey:c.key,Authorization:'Bearer '+c.key,'Content-Type':'application/json'},extra||{}),body:body==null?undefined:JSON.stringify(body)});
    if(!r.ok){let t='';try{t=await r.text();}catch(e){}throw new Error(r.status+' '+t.slice(0,160));}
    const tx=await r.text();return tx?JSON.parse(tx):null;}finally{clearTimeout(to);}},
  queue(){try{const q=JSON.parse(localStorage.getItem('cor_sb_queue')||'[]');return Array.isArray(q)?q:[];}catch(e){return[];}},

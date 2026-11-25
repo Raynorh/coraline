@@ -1,5 +1,8 @@
 # CHANGELOG — Coraline
 
+## v1.4.1 — 2026-11-24
+Ranking compartido conectado al proyecto de Supabase de Coraline (clave pública `sb_publishable_…`; la seguridad la dan las reglas RLS del SQL).
+
 ## v1.4.0 — 2026-11-24
 **Frutillas (nuevo, juego #8)** — estilo Fruit Clash / Suika: suelta frutas en el frasco y cuando dos iguales se tocan se fusionan en la siguiente (🍒→🍓→🍇→🍊→🍎→🍐→🍑→🍍→🍈→🍉). Combos con bonus, sandía gigante = +500. Pierdes si una fruta se queda sobre la línea roja. Dificultad: frasco más angosto, frutas más grandes al soltar, menos margen sobre la línea y caída más rápida. Puntajes propios (también para Supabase: ejecuta de nuevo el SQL de docs/).
 

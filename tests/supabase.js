@@ -1,7 +1,7 @@
 // Pruebas del ranking compartido con un Supabase simulado (sin red real). Uso: NODE_PATH=$(npm root -g) node tests/supabase.js [carpeta dist]
 const {chromium}=require('playwright');const http=require('http'),fs=require('fs'),path=require('path');
 const dir=path.resolve(process.argv[2]||'dist');
-const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(p.endsWith('/'))p+='index.html';fs.readFile(p,(e,d)=>{if(e){r.writeHead(404);r.end();return;}r.writeHead(200,{'Content-Type':p.endsWith('.html')?'text/html':'audio/mpeg'});r.end(d);});});
+const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(p.endsWith('/'))p+='index.html';fs.readFile(p,(e,d)=>{if(e){r.writeHead(404);r.end();return;}if(p.endsWith('.html'))d=Buffer.from(d.toString('utf8').replace(/const SB_CONF=\{url:'[^']*',key:'[^']*'\}/,"const SB_CONF={url:'',key:''}"));r.writeHead(200,{'Content-Type':p.endsWith('.html')?'text/html':'audio/mpeg'});r.end(d);});});
 (async()=>{await new Promise(r=>srv.listen(0,r));const url='http://127.0.0.1:'+srv.address().port+'/';
  const b=await chromium.launch();const pg=await b.newPage({viewport:{width:480,height:760}});
  const errs=[];pg.on('pageerror',e=>errs.push(e.message));
