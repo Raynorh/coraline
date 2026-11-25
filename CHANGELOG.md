@@ -1,5 +1,8 @@
 # CHANGELOG — Coraline
 
+## v1.4.0 — 2026-11-24
+**Frutillas (nuevo, juego #8)** — estilo Fruit Clash / Suika: suelta frutas en el frasco y cuando dos iguales se tocan se fusionan en la siguiente (🍒→🍓→🍇→🍊→🍎→🍐→🍑→🍍→🍈→🍉). Combos con bonus, sandía gigante = +500. Pierdes si una fruta se queda sobre la línea roja. Dificultad: frasco más angosto, frutas más grandes al soltar, menos margen sobre la línea y caída más rápida. Puntajes propios (también para Supabase: ejecuta de nuevo el SQL de docs/).
+
 ## v1.3.0 — 2026-11-21 (cambios pedidos por Carolina)
 **Dificultad notable en TODOS los modos** — Burbujas (el techo baja cada 10/7/5/4 fallos, menos disparos y más especiales y ratones en Difícil/Experto), Tetris (caída 1300→420 ms), Snake (velocidad 280→85 ms, acelera al crecer y **piedras** fijas en Difícil y Experto), Bloques (en Difícil/Experto empiezas con botones sueltos en el tablero), Corredor 2D (velocidad inicial 5.4→10.6) y Corredor 3D (6→12), además de los corazones. Prueba automática que verifica que cada dificultad sea más dura que la anterior.
 **Botones** — Corredor 2D: ⤓ AGACHARSE a la izquierda y ⤒ SALTAR a la derecha; Corredor 3D: ⤓ DESLIZAR antes de ⤒ SALTAR.

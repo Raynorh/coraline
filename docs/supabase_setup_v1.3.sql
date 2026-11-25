@@ -17,7 +17,7 @@ create table if not exists public.profiles (
 create table if not exists public.scores (
   id uuid primary key,                                   -- lo genera el juego: evita duplicados al reintentar
   profile_id uuid not null references public.profiles(id) on delete cascade,
-  game text not null check (game in ('bubble','tetris','blocks','snake','kong','runner','runner3d')),
+  game text not null check (game in ('bubble','tetris','blocks','snake','kong','runner','runner3d','fruit')),
   mode text not null check (char_length(mode) between 1 and 20),
   diff text not null check (diff in ('facil','normal','dificil','experto')),
   score integer not null check (score >= 0 and score <= 10000000),
@@ -67,3 +67,7 @@ create policy "guardar puntaje" on public.scores for insert to anon, authenticat
 --   select id, nickname, created_at from public.profiles order by created_at;
 -- y luego:
 --   update public.profiles set is_special = true where id = 'PEGA-AQUI-EL-UUID-DE-CAROLINA';
+
+-- Si ya habías ejecutado una versión anterior de este archivo, esto agrega el juego 'fruit' (Frutillas):
+alter table public.scores drop constraint if exists scores_game_check;
+alter table public.scores add constraint scores_game_check check (game in ('bubble','tetris','blocks','snake','kong','runner','runner3d','fruit'));

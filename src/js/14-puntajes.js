@@ -9,10 +9,11 @@ const GAMES={
  snake:{n:'Snake',ico:'🐍',modes:{walls:'Con paredes',wrap:'Sin paredes'}},
  kong:{n:'Aventura',ico:'🌲',modes:{story:'Aventura'}},
  runner:{n:'Corredor 2D',ico:'🏃',modes:{endless:'Sin fin'}},
- runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}}};
+ runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}},
+ fruit:{n:'Frutillas',ico:'🍓',modes:{classic:'Clásico'}}};
 const DIFF_NAMES={facil:'Fácil',normal:'Normal',dificil:'Difícil',experto:'Experto'};
 // Modo de juego actual (clave estable que se guarda junto al puntaje).
-function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':'endless';}
+function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':mode==='fruit'?'classic':'endless';}
 const ScoreStore={
  KEY:'coraline_scores_v3',
  all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l:[];}catch(e){return [];}},
@@ -41,6 +42,7 @@ function modeLabel(){const G=GAMES[mode];return G?G.n+' · '+G.modes[modeKey()]:
 function loseLines(){
  const pts='⭐ '+Math.floor(score).toLocaleString('es-CL')+' puntos';
  if(mode==='snake'||mode==='blocks')return[pts];
+ if(mode==='fruit')return[fMerges+' fusiones',pts];
  if(mode==='tetris'&&tetrisMode==='classic')return[pts,'📏 '+tlines+' líneas · nivel '+tlevel];
  if(mode==='tetris')return['Rescataste '+savedTotal+' ratoncitos en total',pts];
  if(mode==='bubble'&&bubbleMode==='endless')return['Rescataste '+savedTotal+' ratoncitos en total',pts];

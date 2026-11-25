@@ -171,7 +171,7 @@ ok('El techo baja: entran 2 filas nuevas arriba, llegan ratones pendientes y la 
  await E(()=>{openProfileView();});
  ok('Panel de perfil muestra el apodo y los mejores puntajes',await E(()=>$('profile-view').style.display==='block'&&/Ana/.test($('pv-body').textContent)&&/900/.test($('pv-body').textContent)));
  await E(()=>{showPanel('profile-view',false);openScores();});
- ok('Panel de puntajes: pestañas por juego',await E(()=>$('scores-panel').style.display==='block'&&$('scores-tabs').querySelectorAll('button').length===7));
+ ok('Panel de puntajes: pestañas por juego',await E(()=>$('scores-panel').style.display==='block'&&$('scores-tabs').querySelectorAll('button').length===8));
  await E(()=>{showPanel('scores-panel',false);openConfig();});
  ok('Configuración: silencio, 3 volúmenes, Apple Music y sonidos personalizados',await E(()=>$('config').style.display==='block'&&!!$('cfg-mute')&&!!$('vol-music')&&!!$('vol-voice')&&!!$('vol-sfx')&&!!$('cfg-sounds')));
  await E(()=>{vols.music=.5;applyVolumes();showPanel('config',false);});
@@ -276,6 +276,18 @@ ok('El techo baja: entran 2 filas nuevas arriba, llegan ratones pendientes y la 
  ok('Corredor 3D: chocar con un armario quita un corazón',await E(()=>pHearts===2));
  await E(()=>{pHearts=1;pInv=0;pObs=[{t:'block',lane:Math.round(pX),z:10}];});await pg.waitForTimeout(200);
  ok('Corredor 3D: sin corazones se pierde y guarda puntaje en su propia tabla',await E(()=>state==='lose'&&GAMES.runner3d&&ScoreStore.top('runner3d','endless','all').length>=1||state==='lose'));
+ // ---------- v1.4: Frutillas ----------
+ await E(()=>{mode='fruit';diff='normal';startPlay();});await pg.waitForTimeout(300);
+ ok('Frutillas: arranca con frasco vacío y una fruta en mano',await E(()=>state==='play'&&fr.length===0&&fCur>=0));
+ await E(()=>{fAim(240);fDrop();});await pg.waitForTimeout(1500);
+ ok('Frutillas: la fruta soltada cae y se apoya en el fondo',await E(()=>fr.length===1&&fr[0].y+fr[0].r>F_FL-3));
+ await E(()=>{fr=[{x:240,y:600,vx:0,vy:0,t:1,r:FR[1].r,age:200},{x:240,y:600+FR[1].r*1.6,vx:0,vy:0,t:1,r:FR[1].r,age:200}];score=0;});await pg.waitForTimeout(400);
+ ok('Frutillas: dos frutas iguales que se tocan se fusionan en la siguiente (🍓+🍓=🍇) y suman puntos',await E(()=>fr.some(f=>f.t===2)&&fr.filter(f=>f.t===1).length===0&&score>0));
+ await E(()=>{fr=[{x:240,y:300,vx:0,vy:0,t:1,r:FR[1].r,age:200},{x:300,y:300,vx:0,vy:0,t:2,r:FR[2].r,age:200}];fMerges=0;});await pg.waitForTimeout(300);
+ ok('Frutillas: frutas distintas NO se fusionan',await E(()=>fMerges===0&&fr.length===2));
+ await E(()=>{fr=[{x:240,y:F_LINE+4,vx:0,vy:0,t:5,r:FR[5].r,age:500}];fOver=0;fCD=999;for(let i=0;i<F_GRACE[1]+40&&state==='play';i++){fr[0].y=F_LINE+4;fr[0].vy=0;fStep();}});
+ ok('Frutillas: una fruta sobre la línea roja demasiado tiempo termina la partida y guarda el puntaje',await E(()=>state==='lose'));
+ ok('Frutillas: dificultad notable (frasco, fruta inicial, margen, caída)',await E(()=>F_HW[3]<F_HW[0]-25&&F_SPAWN[3]>F_SPAWN[0]&&F_GRACE[3]<F_GRACE[0]/2&&F_G[3]>F_G[0]));
  ok('Selector con 7 juegos',await E(()=>{mode='kong';state='select';return true;}));
  ok('Sin errores de consola/página',errs.length===0);
  console.log(res.map(r=>r.join(' ')).join('\n'));if(errs.length)console.log(errs.join('\n'));
