@@ -1,11 +1,17 @@
-# Coraline v1.8.0
+# Coraline v1.9.1 — Reinicio total
 
-- Cada minijuego muestra el icono y nombre de su recurso principal en la tarjeta.
-- Leyenda de recompensas separada en líneas, con espaciado corregido para evitar textos montados.
-- Recompensa principal garantizada y conectada a la economía real según minijuego.
-- Cantidad escalada por puntuación y dificultad; bonus de componentes/esencia conservados para condiciones especiales.
-- Ajustes de distribución vertical para evitar solapamientos en selección de aventura.
+## Reinicio para todos los jugadores
+- Nueva época global de reinicio local: borra perfiles, scores locales, progreso, recursos/inventario y colas de scores anteriores en el navegador actualizado.
+- Obliga a crear perfil con nombre (1–18 caracteres) antes de jugar; no permite cerrar el selector sin perfil.
+- Incluye SQL separado para vaciar scores y perfiles remotos de Supabase (requiere ejecutarlo manualmente).
+- Conserva ajustes de audio y conexión de Supabase.
 
-## Verificación
-- Build HTML autocontenido.
-- Suite automatizada `npm test`.
+# Coraline v1.9.0
+
+## Restauración de Experto y balance
+- Restablecida la cuarta dificultad (Experto) en selección y scores.
+- Récords Expertos se conservan y no se reclasifican como Difícil.
+- Experto añade presión gradual, pero no fuerza piezas imposibles.
+- Block Blast: distribución de piezas específica de Experto, apertura menos congestionada y DFS sigue verificando la jugabilidad de cada mano.
+- Los scores se muestran filtrados por dificultad; Supabase ya admite `experto` en el esquema SQL existente.
+- Dificultad de minijuegos de tiempo, estrategia y supervivencia usa sus perfiles de cuarto nivel ya definidos, con ajustes de balance.

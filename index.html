@@ -45,7 +45,7 @@
   #config input[type=url],#config input[type=text]{display:block;width:100%;box-sizing:border-box;margin:6px 0;padding:10px 12px;border-radius:14px;border:2px solid #9b5de5;background:#1a0f2b;color:#fff;font:600 13px Quicksand,sans-serif}
   .cfg-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #9b5de533}
   .cfg-row input[type=range]{flex:1;accent-color:#06d6a0}.cfg-row b{width:42px;text-align:right;color:#ffd166}
-  .sc-row{display:flex;gap:8px;padding:7px 4px;border-bottom:1px solid #9b5de533;align-items:center}.home-record{display:inline-flex;flex-direction:column;justify-content:center;gap:4px;vertical-align:top;width:126px;min-height:48px;margin:0 3px;padding:5px 7px;box-sizing:border-box;border:1px solid #9b5de5;border-radius:10px;background:rgba(24,10,40,.92);text-align:center}.home-record .game{font-size:12px;font-weight:800;color:#e9c6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.home-record .score{font-size:13px;font-weight:900;color:#ffd166}.home-record .player{font-size:10px;color:#8fe9c9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sc-row.me{background:#06d6a022;border-radius:8px}
+  .sc-row{display:flex;gap:8px;padding:7px 4px;border-bottom:1px solid #9b5de533;align-items:center}.sc-row.me{background:#06d6a022;border-radius:8px}
   .sc-row .pos{width:26px;color:#ffd166;font-weight:700}.sc-row .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sc-row .pt{font-weight:700}.sc-row .mt{color:#b79cd6;font-size:12px;width:78px;text-align:right}
   .pv-name{font:700 22px Quicksand,sans-serif;text-align:center;color:#fff;margin:6px 0}.pv-sub{text-align:center;color:#b79cd6;font-size:12px;margin-bottom:8px}.pv-badge{text-align:center;color:#ffd166;font-weight:700;margin:6px 0}
   .pv-row{display:flex;justify-content:space-between;gap:6px;padding:6px 2px;border-bottom:1px solid #9b5de533;font-size:13px}.pv-row span:first-child{flex:1}.pv-row span:nth-child(2){font-weight:700;width:70px;text-align:right}.pv-pos{color:#8fe9c9;width:70px;text-align:right}
@@ -82,10 +82,10 @@
     <button id="modal-close">Volver</button>
   </div>
   <div id="profiles">
-    <h2>Jugadores</h2>
-    <p id="profile-hint">Cada perfil tiene su propia identidad. El apodo solo se muestra: dos jugadores pueden llamarse igual y seguir siendo distintos. El saludo se escucha una vez por perfil.</p>
+    <h2>¡Bienvenido al nuevo comienzo!</h2>
+    <p id="profile-hint">El reinicio es total: no hay perfiles ni récords anteriores. Escribe tu nombre para crear tu perfil y comenzar. Este paso es obligatorio.</p>
     <div id="profile-list"></div>
-    <input id="profile-name" maxlength="18" placeholder="Apodo" autocomplete="off">
+    <input id="profile-name" maxlength="18" placeholder="Escribe tu nombre (obligatorio)" autocomplete="off" required>
     <button id="profile-create" type="button">Crear perfil</button>
     <button id="profile-close" type="button">Volver</button>
   </div>
@@ -141,7 +141,7 @@
 
 <script>
 'use strict';
-const VERSION='v1.7.0';
+const VERSION='v1.9.1';
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const W=480,H=760,R=24,COLS=9,ROWS=11,ROWH=R*Math.sqrt(3),TOP=60,AMMO0=25,MICE0=6;
 const CX=240,CY=655,CANCEL_Y=692; // cañón
@@ -283,17 +283,30 @@ const fogs=Array.from({length:6},(_,i)=>({x:rnd(0,W),y:380+i*55,r:rnd(110,180),s
 const DIFF={
  facil:{n:'Fácil',ammo:34,colors:4,rows:3,t:1300,garb:3,rise:0,sv:280,ramp:30},
  normal:{n:'Medio',ammo:30,colors:4,rows:4,t:900,garb:4,rise:0,sv:180,ramp:55},
- dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55}};
-const DIFF_KEYS=['facil','normal','dificil'];
+ dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55},
+ experto:{n:'Experto',ammo:22,colors:5,rows:5,t:560,garb:7,rise:22,sv:108,ramp:60}};
+const DIFF_KEYS=['facil','normal','dificil','experto'];
 function dIdx(){return Math.max(0,DIFF_KEYS.indexOf(diff));}
-// Migración única de la preferencia guardada (los nombres cambiaron de significado en v0.8.0).
-try{if(localStorage.getItem('cor_diff_v3')!=='1'){const old=localStorage.getItem('cor_diff');if(old==='experto')localStorage.setItem('cor_diff','dificil');if(!['facil','normal','dificil'].includes(localStorage.getItem('cor_diff')))localStorage.setItem('cor_diff','normal');localStorage.setItem('cor_diff_v3','1');}}catch(e){}
+// Migración de preferencias: conserva Experto si estaba seleccionado; no degrada a Difícil.
+try{if(localStorage.getItem('cor_diff_v4')!=='1'){const old=localStorage.getItem('cor_diff');if(!DIFF_KEYS.includes(old))localStorage.setItem('cor_diff','normal');localStorage.setItem('cor_diff_v4','1');}}catch(e){}
 try{const m=localStorage.getItem('cor_mode'),d=localStorage.getItem('cor_diff');if(['tetris','bubble','blocks','snake','kong','runner','runner3d','fruit'].includes(m))mode=m;if(DIFF[d])diff=d;}catch(e){}
 function saveSel(){try{localStorage.setItem('cor_mode',mode);localStorage.setItem('cor_diff',diff);}catch(e){}}
 let blocksStyle='rounded',profile=null,snakeWrap=false,snakeCtl='',tetrisMode='rescue',bubbleMode='levels',bubbleLevel=1,bMice=6;
 let lastPtr='mouse';const IS_TOUCH=(window.matchMedia&&matchMedia('(pointer: coarse)').matches)||('ontouchstart' in window);
 function prefsObj(){return{blocksStyle,snakeWrap,snakeCtl,tetrisMode,bubbleMode};}
 function savePrefs(){if(profile)persistProfile();else{try{localStorage.setItem('cor_blocks_style',blocksStyle);localStorage.setItem('cor_snake_wrap',snakeWrap?'1':'0');localStorage.setItem('cor_tetris_mode',tetrisMode);localStorage.setItem('cor_bubble_mode',bubbleMode);localStorage.setItem('cor_snake_ctl',snakeCtl);}catch(e){}}}
+// REINICIO GLOBAL v2: una nueva versión del juego obliga a todos los navegadores
+// actualizados a comenzar sin perfiles, progreso ni puntajes locales. No borra
+// ajustes de audio ni la configuración de conexión Supabase.
+const GLOBAL_RESET_EPOCH='coraline-reset-2026-11-28';
+function applyGlobalResetIfNeeded(){try{if(localStorage.getItem('coraline_global_reset_epoch')===GLOBAL_RESET_EPOCH)return;
+ const exact=['coraline_profiles','coraline_profile','coraline_scores','coraline_scores_v2','coraline_scores_v3','coraline_scores_migrated_v1','coraline_scores_migrated_v3','coraline_carolina_id','coraline_global_reset_epoch','cor_sb_queue','cor_sb_names','cor_sb_backfill'];
+ exact.forEach(k=>localStorage.removeItem(k));
+ // Progreso e inventarios ligados a perfiles anteriores, además de invitado.
+ const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('cor_mouse_economy_v1')||k.startsWith('cor_bprog_')))remove.push(k);}remove.forEach(k=>localStorage.removeItem(k));
+ localStorage.setItem('coraline_global_reset_epoch',GLOBAL_RESET_EPOCH);
+ }catch(e){}}
+applyGlobalResetIfNeeded();
 const LEGACY_PROFILE_ID='00000000-0000-4000-8000-000000000001';
 // Identidad interna de Carolina. No se infiere por apodo.
 // Permanece vacía hasta confirmar el perfil auténtico; también se lee coraline_carolina_id.
@@ -309,7 +322,7 @@ function migrateScores(){const flag='coraline_scores_migrated_v1';try{if(localSt
 function bootProfile(){migrateScores();try{const saved=localStorage.getItem('cor_blocks_style');if(saved==='square'||saved==='rounded')blocksStyle=saved;snakeWrap=localStorage.getItem('cor_snake_wrap')==='1';tetrisMode=localStorage.getItem('cor_tetris_mode')==='classic'?'classic':'rescue';{const bm=localStorage.getItem('cor_bubble_mode');bubbleMode=(bm==='endless'||bm==='rescue')?'endless':'levels';}const id=localStorage.getItem('coraline_profile');const found=loadProfiles().find(p=>p.id===id);if(found)applyProfile(found);}catch(e){}}
 function renderProfiles(){const box=document.getElementById('profile-list');const list=loadProfiles();box.innerHTML=list.map(p=>'<button type="button" class="'+(profile&&profile.id===p.id?'on':'')+'" data-id="'+p.id+'">'+esc(p.nickname||'Jugador')+(profile&&profile.id===p.id?' · actual':'')+'</button>').join('')||'<p>Crea tu primer perfil.</p>';box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const next=loadProfiles().find(p=>p.id===b.dataset.id);if(!next)return;applyProfile(next);persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profiles').style.display='none';playGeneralGreeting();});}
 function openProfiles(){renderProfiles();document.getElementById('profiles').style.display='block';}
-function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18)||'Jugador';if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
+function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18);if(!nick){document.getElementById('profile-name').focus();return;}if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
 bootProfile();
 document.getElementById('profile-create').onclick=createNamedProfile;
 document.getElementById('profile-close').onclick=()=>{if(!profile)return;document.getElementById('profiles').style.display='none';};
@@ -615,10 +628,10 @@ function actNew(id){
   if(mode==='blocks')blocksStyle=k?'square':'rounded';else if(mode==='snake')snakeWrap=!!k;else if(mode==='tetris')tetrisMode=k?'classic':'rescue';else bubbleMode=k?'endless':'levels';
   savePrefs();return true;}
  if(id==='bLamp'){bUseHint();return true;}if(id==='bSwap'){bUseSwap();return true;}if(id==='bShape'){bUseShapeJoker();return true;}if(id==='bjcancel'){bJokerPicker=false;return true;}if(/^bj\d+$/.test(id)){bChooseShape(Number(id.slice(2)));return true;}
- if(id==='mousehub'){mouseTab='home';mouseMsg='Explora a tu ritmo: minijuegos, granja y defensa.';state='mousehub';mouseTutorial('hub','Bienvenida a la granja','Aquí puedes reunir recursos, fabricar ratoncitos y prepararte para defender el jardín.');return true;}if(id.startsWith('mtab-')||id==='mback'||id==='mcollect'||id==='mupgrade'||id==='mdefend'||id==='mclear'||id==='msow'||id==='mresources'||id==='mledger'||id==='mstart'||id==='mlevel-next'||id==='mlevel-prev'||id==='mhelp'||id==='mtut-close'||id.startsWith('mcraft-')||id.startsWith('mlist-')||id.startsWith('mbtype-')||id.startsWith('mbcell-')||id==='mblaunch'||id==='mbretreat'){mouseHubAction(id);return true;}
+ if(id==='mousehub'){mouseTab='home';mouseMsg='Explora a tu ritmo: minijuegos, granja y defensa.';state='mousehub';mouseTutorial('hub','Bienvenida a la granja','Aquí puedes reunir recursos, fabricar ratoncitos y prepararte para defender el jardín.');return true;}if(id.startsWith('mtab-')||id==='mback'||id==='mcollect'||id==='mupgrade'||id==='mdefend'||id==='mclear'||id==='msow'||id==='mresources'||id==='mstart'||id==='mlevel-next'||id==='mlevel-prev'||id==='mhelp'||id==='mtut-close'||id.startsWith('mcraft-')||id.startsWith('mlist-')||id.startsWith('mbtype-')||id.startsWith('mbcell-')||id==='mblaunch'||id==='mbretreat'){mouseHubAction(id);return true;}
  if(id==='sctl'){snakeCtl=snakeCtl==='swipe'?'':'swipe';savePrefs();return true;}
  if(id==='sU'||id==='sD'||id==='sL'||id==='sR'){sPress(id);return true;}
- if(id==='df'||id==='dn'||id==='dd'){diff={df:'facil',dn:'normal',dd:'dificil'}[id];saveSel();return true;}
+ if(id==='df'||id==='dn'||id==='dd'||id==='de'){diff={df:'facil',dn:'normal',dd:'dificil',de:'experto'}[id];saveSel();return true;}
  if(id==='go'){if(mode==='bubble'&&bubbleMode==='levels'){state='map';return true;}startPlay();return true;}
  if(/^lv\d+$/.test(id)){const n=Number(id.slice(2));if(n<=bubbleProg().unlocked){bubbleLevel=n;startPlay();}return true;}
  if(id==='legend'){openLegend();return true;}
@@ -634,18 +647,19 @@ function card(x,y,w,h,sel,id){ctx.save();ctx.fillStyle=sel?'#3a1860':'#1c0d30';r
 function drawSelect(){drawSky();moonButton(438,28,18);drawFog(.15);drawFireflies();const D=DIFF[diff];
  txt('Elige tu aventura',240,40,'900 22px "Cinzel Decorative",Georgia,serif','#ffd166');
  const cards=[['mb','bubble','🫧','Burbujas','Niveles y poderes'],['mt','tetris','🧱','Tetris','Filas y rescate'],['mbl','blocks','🔷','Bloques','Encaja y combos'],['ms','snake','🐍','Snake','El hilo'],['mk','kong','🌲','Aventura','Plataformas 2D'],['mr','runner','🏃','Corredor 2D','Estilo dinosaurio'],['mr3','runner3d','🏁','Corredor 3D','Estilo Pepsiman'],['mf','fruit','🍓','Frutillas','Fusiona frutas']];
- cards.forEach(([id,m,ico,nm,tg],i)=>{const row=Math.floor(i/4),col=i%4,x=(cards.length%4&&row?69:5)+col*118,y=52+row*84;card(x,y,112,76,mode===m,id);txt(ico,x+56,y+32,'28px sans-serif','#fff');txt(nm,x+56,y+52,'800 12px Quicksand,sans-serif','#fff');txt(tg,x+56,y+67,'500 9.5px Quicksand,sans-serif','#cdb6ea');});
- txt('Dificultad',240,242,'700 15px Quicksand,sans-serif','#8fe9c9');
- [['df','Fácil','facil'],['dn','Medio','normal'],['dd','Difícil','dificil']].forEach(([id,l,k],i)=>{const x=65+i*117,y=252,sel=diff===k;ctx.fillStyle=sel?'#06705a':'#2a1346';rr(x,y,110,40,20);ctx.fill();ctx.strokeStyle=sel?'#06d6a0':'#9b5de5';ctx.lineWidth=sel?3:2;ctx.stroke();txt(l,x+55,y+26,'700 14px Quicksand,sans-serif','#fff');hits.push({x,y,w:110,h:40,id});});
- const d=mode==='bubble'?D.ammo+' botones · '+D.colors+' colores'+(bubbleMode==='endless'?' · sin fin':''):mode==='tetris'?'Caída '+(D.t>=1100?'muy lenta':D.t>=800?'lenta':D.t>=500?'media':'rápida')+(tetrisMode==='rescue'?' · '+D.garb+' filas-trampa':' · por puntos'):mode==='snake'?['Paso lento','Paso medio','Paso rápido'][dIdx()]+' · '+(snakeWrap?'sin paredes':'con paredes'):mode==='kong'?KDIFF[dIdx()].hearts+' corazones · enemigos '+['pocos y lentos','normales','muchos y rápidos'][dIdx()]+' · jefes '+['fáciles','normales','duros'][dIdx()]+(dIdx()===2?' · sin Wybie':''):mode==='runner3d'?['5','4','3'][dIdx()]+' corazones · velocidad '+['tranquila','media','alta'][dIdx()]+' · 3 carriles, sin fin':mode==='runner'?['4','3','2'][dIdx()]+(dIdx()===2?' corazón':' corazones')+' · velocidad '+['tranquila','media','alta'][dIdx()]+' · sin fin':mode==='fruit'?'Frasco '+['ancho','normal','angosto'][dIdx()]+' · frutas hasta nivel '+(F_SPAWN[dIdx()]+1)+' al soltar · '+['mucho','bastante','poco'][dIdx()]+' margen sobre la línea':'Tablero 8×8 · '+(blocksStyle==='square'?'botones cuadrados':'botones redondos')+' · con comodines';
- txt(d,240,314,'500 13px Quicksand,sans-serif','#cdb6ea');
+ const rewardMap={bubble:['🌱','Semillas'],tetris:['🧵','Tela'],blocks:['🧵','Tela'],snake:['🪵','Madera'],kong:['⚙️','Componentes'],runner:['🧀','Comida'],runner3d:['✨','Esencia'],fruit:['🧀','Comida']};
+ cards.forEach(([id,m,ico,nm,tg],i)=>{const row=Math.floor(i/4),col=i%4,x=5+col*118,y=52+row*91;card(x,y,112,86,mode===m,id);txt(ico,x+56,y+25,'26px sans-serif','#fff');txt(nm,x+56,y+45,'800 12px Quicksand,sans-serif','#fff');txt(tg,x+56,y+59,'500 9px Quicksand,sans-serif','#cdb6ea');const rw=rewardMap[m];ctx.fillStyle='rgba(6,214,160,.13)';rr(x+9,y+65,94,17,8);ctx.fill();txt(rw[0]+' '+rw[1],x+56,y+77,'800 10px Quicksand,sans-serif','#8fe9c9');});
+ txt('Dificultad',240,244,'700 15px Quicksand,sans-serif','#8fe9c9');
+ [['df','Fácil','facil'],['dn','Medio','normal'],['dd','Difícil','dificil'],['de','Experto','experto']].forEach(([id,l,k],i)=>{const x=18+i*116,y=254,sel=diff===k;ctx.fillStyle=sel?'#06705a':'#2a1346';rr(x,y,106,38,19);ctx.fill();ctx.strokeStyle=sel?'#06d6a0':'#9b5de5';ctx.lineWidth=sel?3:2;ctx.stroke();txt(l,x+53,y+25,'700 13px Quicksand,sans-serif','#fff');hits.push({x,y,w:106,h:38,id});});
+ const d=mode==='bubble'?D.ammo+' botones · '+D.colors+' colores'+(bubbleMode==='endless'?' · sin fin':''):mode==='tetris'?'Caída '+(D.t>=1100?'muy lenta':D.t>=800?'lenta':D.t>=500?'media':'rápida')+(tetrisMode==='rescue'?' · '+D.garb+' filas-trampa':' · por puntos'):mode==='snake'?['Paso lento','Paso medio','Paso rápido','Paso muy rápido'][dIdx()]+' · '+(snakeWrap?'sin paredes':'con paredes'):mode==='kong'?KDIFF[dIdx()].hearts+' corazones · enemigos '+['pocos y lentos','normales','muchos y rápidos','numerosos y ágiles'][dIdx()]+' · jefes '+['fáciles','normales','duros','muy exigentes'][dIdx()]+(dIdx()===3?' · sin Wybie':''):mode==='runner3d'?['5','4','3','2'][dIdx()]+' corazones · velocidad '+['tranquila','media','alta','muy alta'][dIdx()]+' · 3 carriles, sin fin':mode==='runner'?['4','3','2','1'][dIdx()]+' corazones'+' · velocidad '+['tranquila','media','alta','muy alta'][dIdx()]+' · sin fin':mode==='fruit'?'Frasco '+['ancho','normal','angosto','más angosto'][dIdx()]+' · frutas hasta nivel '+(F_SPAWN[dIdx()]+1)+' al soltar · '+['mucho','bastante','poco','reducido'][dIdx()]+' margen sobre la línea':'Tablero 8×8 · '+(blocksStyle==='square'?'botones cuadrados':'botones redondos')+' · con comodines';
+ txt(d,240,306,'500 12px Quicksand,sans-serif','#cdb6ea');
  const subs=mode==='blocks'?[['Redondo',blocksStyle==='rounded'],['Cuadrado',blocksStyle==='square']]
   :mode==='snake'?[['Con paredes',!snakeWrap],['Sin paredes',snakeWrap]]
   :mode==='tetris'?[['Rescate',tetrisMode==='rescue'],['Clásico',tetrisMode==='classic']]
   :mode==='kong'||mode==='runner'||mode==='runner3d'||mode==='fruit'?[]
   :[['Niveles',bubbleMode==='levels'],['Sin fin',bubbleMode==='endless']];
- subs.forEach(([l,sel],i)=>{const x=40+i*210,y=334;ctx.fillStyle=sel?'#06705a':'#2a1346';rr(x,y,190,40,20);ctx.fill();ctx.strokeStyle=sel?'#06d6a0':'#9b5de5';ctx.lineWidth=2;ctx.stroke();txt(l,x+95,y+26,'700 15px Quicksand,sans-serif','#fff');hits.push({x,y,w:190,h:40,id:'sub'+i});});
- txt('RECOMPENSAS AL JUGAR',240,382,'800 11px Quicksand,sans-serif','#ffd166');txt('🌱 Semillas  ·  🪵 Madera  ·  🧀 Comida',240,397,'700 11px Quicksand,sans-serif','#fff');txt('🧵 Tela (Bloques/Tetris)  ·  ⚙️ / ✨ por dificultad y puntaje',240,412,'600 9.5px Quicksand,sans-serif','#cdb6ea');menuBtn('¡Entrar al Otro Mundo!',420,'go','#06d6a0');menuBtn('Volver',476,'back');}
+ subs.forEach(([l,sel],i)=>{const x=40+i*210,y=324;ctx.fillStyle=sel?'#06705a':'#2a1346';rr(x,y,190,38,19);ctx.fill();ctx.strokeStyle=sel?'#06d6a0':'#9b5de5';ctx.lineWidth=2;ctx.stroke();txt(l,x+95,y+25,'700 14px Quicksand,sans-serif','#fff');hits.push({x,y,w:190,h:38,id:'sub'+i});});
+ ctx.fillStyle='rgba(16,7,30,.92)';rr(16,370,448,62,12);ctx.fill();ctx.strokeStyle='#563878';ctx.lineWidth=1;rr(16,370,448,62,12);ctx.stroke();txt('RECOMPENSAS · RECURSO PRINCIPAL',240,384,'800 10px Quicksand,sans-serif','#ffd166');txt('🫧 Burbujas → 🌱 Semillas   ·   🧱 Tetris / 🔷 Bloques → 🧵 Tela   ·   🐍 Snake → 🪵 Madera',240,400,'700 9.3px Quicksand,sans-serif','#fff');txt('🌲 Aventura → ⚙️ Componentes   ·   🏃 Corredor 2D / 🍓 Frutillas → 🧀 Comida',240,414,'700 9.3px Quicksand,sans-serif','#cdb6ea');txt('🏁 Corredor 3D → ✨ Esencia   ·   Bonus ⚙️ / ✨ por dificultad y puntuación alta',240,427,'700 9.3px Quicksand,sans-serif','#cdb6ea');menuBtn('¡Entrar al Otro Mundo!',446,'go','#06d6a0');menuBtn('Volver',496,'back');}
 function drawBtnS(x,y,ci,mouse,rad,alpha){ctx.save();ctx.translate(x,y);ctx.scale(rad/R,rad/R);drawButton(0,0,ci,mouse,alpha);ctx.restore();}
 
 
@@ -668,7 +682,7 @@ const bPops=[];
 let bTime=0,bBest=0,bHints=1,bSwaps=1,bShapeJokers=1,bHintTarget=null,bPressure=0,bPressureMsg=false,bSkin=0,bJokerPicker=false;
 // Mejor puntaje previo de este perfil en Bloques (para el reto "a punto de superar el récord").
 function bBestScore(){try{const list=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');return list.filter(v=>v&&v.mode==='Bloques'&&(!profile||v.profileId===profile.id)).reduce((m,v)=>Math.max(m,Number(v.score)||0),0);}catch(e){return 0;}}
-const B_START=[0,0,8];// botones sueltos que ya hay al empezar
+const B_START=[0,0,8,6];// bloque inicial: Experto tiene menos clutter que Difícil para mantener apertura estratégica
 function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0;k<B_START[dIdx()];k++){let t=0,x,y;do{x=ri(BC);y=ri(BC);t++;}while(t<40&&bgrid[y][x]!==-1);bgrid[y][x]=ri(7);}bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
  bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bShapeJokers=1;bHintTarget=null;bPressure=0;bPressureMsg=false;bSkin=0;bJokerPicker=false;
  score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];clearTimeout(endTimer);endTimer=null;bpieces=bDeal();
@@ -677,10 +691,10 @@ function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0
 // La presión sube con el tiempo de juego (desde 1 min) y al acercarse al récord personal.
 function bUpdatePressure(){const timeP=clamp01((bTime/1000-60)/240),recP=bBest>0?clamp01((bscore-.6*bBest)/(.4*bBest)):0;bPressure=Math.max(timeP,recP);
  if(bPressure>.5&&!bPressureMsg){bPressureMsg=true;say('Gato Negro','El tablero se pone difícil… piensa bien dónde va cada botón.',3200);}}
-const B_EASY=[[7,6,6,3,4,2,2,5,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,2,2],[5,5,5,3,3,2,2,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,2,2],[3,3,3,3,3,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1]];
+const B_EASY=[[7,6,6,3,4,2,2,5,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,2,2],[5,5,5,3,3,2,2,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,2,2],[3,3,3,3,3,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1],[2,3,3,3,2,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1]];
 const B_HARD=[1,1,1,1,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5];
 function bNormalizeCells(cells){const mx=Math.min(...cells.map(c=>c[0])),my=Math.min(...cells.map(c=>c[1]));return cells.map(([x,y])=>[x-mx,y-my]);}
-function bPiece(){const base=B_EASY[dIdx()],hard=B_HARD.map(v=>v*(dIdx()===0?.65:dIdx()===1?.85:1)),w=base.map((v,i)=>v*(1-bPressure)+hard[i]*bPressure);
+function bPiece(){const base=B_EASY[dIdx()],hard=B_HARD.map(v=>v*(dIdx()===0?.65:dIdx()===1?.85:dIdx()===2?1:1.08)),w=base.map((v,i)=>v*(1-bPressure)+hard[i]*bPressure);
  let roll=Math.random()*w.reduce((a,b)=>a+b,0),idx=0;for(;idx<w.length-1;idx++){roll-=w[idx];if(roll<=0)break;}
  return{cells:bNormalizeCells(BSHAPES[idx]),color:ri(7)};}
 function bCanOn(g,piece,x,y){return piece.cells.every(([dx,dy])=>x+dx>=0&&x+dx<BC&&y+dy>=0&&y+dy<BC&&g[y+dy][x+dx]===-1);}
@@ -1067,12 +1081,12 @@ const GAMES={
  runner:{n:'Corredor 2D',ico:'🏃',modes:{endless:'Sin fin'}},
  runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}},
  fruit:{n:'Frutillas',ico:'🍓',modes:{classic:'Clásico'}}};
-const DIFF_NAMES={facil:'Fácil',normal:'Medio',dificil:'Difícil',experto:'Difícil'};
+const DIFF_NAMES={facil:'Fácil',normal:'Medio',dificil:'Difícil',experto:'Experto'};
 // Modo de juego actual (clave estable que se guarda junto al puntaje).
 function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':mode==='fruit'?'classic':'endless';}
 const ScoreStore={
  KEY:'coraline_scores_v3',
- all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l.map(e=>e&&e.diff==='experto'?Object.assign({},e,{diff:'dificil'}):e):[];}catch(e){return [];}},
+ all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l.filter(e=>e&&DIFF_NAMES[e.diff]):[];}catch(e){return [];}},
  save(l){try{localStorage.setItem(this.KEY,JSON.stringify(l.slice(-3000)));}catch(e){}},
  add(e){const l=this.all();l.push(e);this.save(l);return e;},
  // Mejor puntaje de cada perfil en un juego/modo (y dificultad opcional), de mayor a menor.
@@ -1170,7 +1184,7 @@ let sbLoadKey='';
 function renderScores(fetchRemote){const G=GAMES[scGame];if(!G.modes[scMode])scMode=Object.keys(G.modes)[0];
  $('scores-tabs').innerHTML=Object.keys(GAMES).map(g=>'<button class="chip'+(g===scGame?' on':'')+'" data-g="'+g+'" type="button">'+GAMES[g].ico+' '+GAMES[g].n+'</button>').join('');
  $('scores-modes').innerHTML=Object.keys(G.modes).map(m=>'<button class="chip'+(m===scMode?' on':'')+'" data-m="'+m+'" type="button">'+G.modes[m]+'</button>').join('')+
-  '<br>'+['all','facil','normal','dificil'].map(d=>'<button class="chip'+(d===scDiff?' on':'')+'" data-d="'+d+'" type="button">'+(d==='all'?'Todas':DIFF_NAMES[d])+'</button>').join('');
+  '<br>'+['all','facil','normal','dificil','experto'].map(d=>'<button class="chip'+(d===scDiff?' on':'')+'" data-d="'+d+'" type="button">'+(d==='all'?'Todas':DIFF_NAMES[d])+'</button>').join('');
  let top=ScoreStore.top(scGame,scMode,scDiff,10),src=SB.on()?'wait':'local';const rk=scGame+'|'+scMode+'|'+scDiff;
  if(SB.on()){if(SB.cache[rk]){top=SB.cache[rk];src='cloud';}
   if(fetchRemote!==false&&sbLoadKey!==rk){sbLoadKey=rk;SB.flush().then(()=>SB.top(scGame,scMode,scDiff)).then(r=>{sbLoadKey='';if($('scores-panel').style.display==='block')renderScores(false);if(!r)SB.cache[rk]=SB.cache[rk];});}
@@ -1207,7 +1221,7 @@ $('pv-special').onclick=()=>{if(!profile)return;if(!confirm('¿Este perfil es el
    disparo 🌈 arcoíris (toma el color que más grupo forme). Los niveles se generan con semilla: siempre son los mismos. */
 const MAXLV=30,RAINBOW=-2,IRON=-1;
 function seeded(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-const BDIFF={facil:{ammo:10,col:-1,spec:.5,mice:0},normal:{ammo:3,col:0,spec:1,mice:0},dificil:{ammo:-2,col:0,spec:1.4,mice:1}};
+const BDIFF={facil:{ammo:10,col:-1,spec:.5,mice:0},normal:{ammo:3,col:0,spec:1,mice:0},dificil:{ammo:-2,col:0,spec:1.4,mice:1},experto:{ammo:-4,col:1,spec:1.55,mice:1}};
 function levelDef(n){const bd=BDIFF[diff]||BDIFF.normal;
  const rows=Math.min(9,4+Math.floor((n+1)/3)),ncol=Math.max(3,Math.min(6,3+Math.floor(n/5)+bd.col));
  const mice=Math.min(14,6+Math.floor(n/3)+bd.mice),s=bd.spec;
@@ -1806,12 +1820,12 @@ const MOUSE_TYPES=[
 function mouseStoreKey(){return 'cor_mouse_economy_v1'+(profile?'_'+profile.id:'_guest');}
 function mouseDefault(){return {resources:{semillas:12,madera:8,tela:5,comida:10,componentes:2,esencia:1},inventory:{guardian:2,archer:1,freezer:0,alchemist:0,explosive:0,healer:0},farm:{last:Date.now(),level:1,plots:2,remainders:{semillas:0,comida:0,madera:0}},market:[],ledger:[],defenseWins:0,defenseLosses:0,defenseLevel:1,tutorials:{}};}
 let mouseEco=mouseDefault(),mouseTab='home',mouseMsg='Explora a tu ritmo: minijuegos, granja y defensa.',mouseSelected=[],mouseDefRunning=false,mouseBattle=null,mouseBattleType='guardian',mouseDefLevelSelected=1,mouseTutorialOpen=false;
-function mouseLoad(){mouseSelected=[];try{const raw=JSON.parse(localStorage.getItem(mouseStoreKey())||'null');if(raw&&raw.resources&&raw.inventory){mouseEco=Object.assign(mouseDefault(),raw);mouseEco.resources=Object.assign(mouseDefault().resources,raw.resources);mouseEco.inventory=Object.assign(mouseDefault().inventory,raw.inventory);mouseEco.farm=Object.assign(mouseDefault().farm,raw.farm||{});mouseEco.farm.remainders=Object.assign(mouseDefault().farm.remainders,raw.farm&&raw.farm.remainders||{});mouseEco.defenseLevel=Math.max(1,Number(raw.defenseLevel)||1);mouseEco.tutorials=Object.assign({},raw.tutorials||{});mouseEco.ledger=Array.isArray(raw.ledger)?raw.ledger:[];if(!mouseEco.ledger.length)mouseEco.ledger.push({time:Date.now(),kind:'inicio',source:'Inventario inicial de la partida',items:{semillas:12,madera:8,tela:5,comida:10,componentes:2,esencia:1},note:'Recursos iniciales'});}else mouseEco=mouseDefault();}catch(e){mouseEco=mouseDefault();}mouseSave();}
+function mouseLoad(){mouseSelected=[];try{const raw=JSON.parse(localStorage.getItem(mouseStoreKey())||'null');if(raw&&raw.resources&&raw.inventory){mouseEco=Object.assign(mouseDefault(),raw);mouseEco.resources=Object.assign(mouseDefault().resources,raw.resources);mouseEco.inventory=Object.assign(mouseDefault().inventory,raw.inventory);mouseEco.farm=Object.assign(mouseDefault().farm,raw.farm||{});mouseEco.farm.remainders=Object.assign(mouseDefault().farm.remainders,raw.farm&&raw.farm.remainders||{});mouseEco.defenseLevel=Math.max(1,Number(raw.defenseLevel)||1);mouseEco.tutorials=Object.assign({},raw.tutorials||{});mouseEco.ledger=Array.isArray(raw.ledger)?raw.ledger:[];if(!mouseEco.ledger.length)mouseEco.ledger.push({time:Date.now(),kind:'inicio',source:'Inventario inicial de la partida',items:{semillas:12,madera:8,tela:5,comida:10,componentes:2,esencia:1},note:'Recursos iniciales'});}else{mouseEco=mouseDefault();mouseEco.ledger=[{time:Date.now(),kind:'inicio',source:'Inventario inicial de la partida',items:{semillas:12,madera:8,tela:5,comida:10,componentes:2,esencia:1},note:'Recursos iniciales'}];}}catch(e){mouseEco=mouseDefault();mouseEco.ledger=[{time:Date.now(),kind:'inicio',source:'Inventario inicial de la partida',items:{semillas:12,madera:8,tela:5,comida:10,componentes:2,esencia:1},note:'Recursos iniciales'}];}mouseSave();}
 function mouseLedger(kind,source,items,note=''){const clean={};Object.entries(items||{}).forEach(([k,v])=>{const n=Math.floor(Number(v)||0);if(n)clean[k]=n;});if(!Object.keys(clean).length)return;mouseEco.ledger=mouseEco.ledger||[];mouseEco.ledger.unshift({time:Date.now(),kind,source:String(source||'Actividad'),items:clean,note:String(note||'')});mouseEco.ledger=mouseEco.ledger.slice(0,80);}
 function mouseChange(items,source,kind='ganancia',note=''){Object.entries(items||{}).forEach(([k,v])=>{mouseEco.resources[k]=Math.max(0,(mouseEco.resources[k]||0)+v);});mouseLedger(kind,source,items,note);}
 function mouseSave(){try{localStorage.setItem(mouseStoreKey(),JSON.stringify(mouseEco));}catch(e){}}
 function mouseFarmAccrue(){const now=Date.now(),last=Math.max(0,Number(mouseEco.farm.last)||now),hours=Math.min(8,(now-last)/3600000),lvl=Math.max(1,mouseEco.farm.level||1),plots=Math.max(1,mouseEco.farm.plots||2);if(hours>0){mouseEco.resources.semillas+=Math.floor(hours*plots*lvl*.7);mouseEco.resources.comida+=Math.floor(hours*plots*lvl*.45);mouseEco.resources.madera+=Math.floor(hours*plots*.25);}mouseEco.farm.last=now;}
-function mouseRewardFromMinigame(game,points,difficulty){if(!mouseEco||!mouseEco.resources)mouseLoad();const score=Math.max(0,Math.floor(points||0)),factor=difficulty==='dificil'?1.35:difficulty==='facil'?.75:1;const seed=Math.max(1,Math.floor(score/800*factor));const rewards={semillas:seed,madera:Math.floor(seed*.35),tela:game==='blocks'||game==='tetris'?Math.floor(seed*.22):0,comida:Math.floor(seed*.45),componentes:difficulty==='dificil'&&score>2500?1:0,esencia:score>5000?1:0};mouseChange(rewards,'Minijuego: '+(GAMES&&GAMES[game]?GAMES[game].n:game),'ganancia','Recompensa basada en puntuación y dificultad');mouseSave();mouseMsg='Recompensa del minijuego: '+rewards.semillas+' semillas, '+rewards.madera+' madera'+(rewards.tela?' y '+rewards.tela+' tela':'')+'.';if(typeof say==='function')say('Gato Negro',mouseMsg,3000);}
+function mouseRewardFromMinigame(game,points,difficulty){if(!mouseEco||!mouseEco.resources)mouseLoad();const score=Math.max(0,Math.floor(points||0)),factor=difficulty==='dificil'?1.35:difficulty==='facil'?.75:1,amount=Math.max(1,Math.floor(score/800*factor));const primary={bubble:'semillas',tetris:'tela',blocks:'tela',snake:'madera',kong:'componentes',runner:'comida',runner3d:'esencia',fruit:'comida'}[game]||'semillas';const rewards={semillas:0,madera:0,tela:0,comida:0,componentes:0,esencia:0};rewards[primary]=amount;if(difficulty==='dificil'&&score>2500&&primary!=='componentes')rewards.componentes=1;if(score>5000&&primary!=='esencia')rewards.esencia=1;const icon={semillas:'🌱',madera:'🪵',tela:'🧵',comida:'🧀',componentes:'⚙️',esencia:'✨'}[primary],label={semillas:'semillas',madera:'madera',tela:'tela',comida:'comida',componentes:'componentes',esencia:'esencia'}[primary];mouseChange(rewards,'Minijuego: '+(GAMES&&GAMES[game]?GAMES[game].n:game),'ganancia','Recurso principal garantizado: '+label+'; cantidad basada en puntuación y dificultad');mouseSave();mouseMsg='Recompensa: '+amount+' '+label+' '+icon+(rewards.componentes?' + 1 ⚙️':'')+(rewards.esencia?' + 1 ✨':'')+'.';if(typeof say==='function')say('Gato Negro',mouseMsg,3000);}
 function mouseLevelReq(level){const req=[{guardian:1},{guardian:1,archer:1},{guardian:1,freezer:1},{guardian:1,archer:1,healer:1},{guardian:2,archer:1},{guardian:1,explosive:1,archer:1},{guardian:1,freezer:1,alchemist:1},{guardian:2,healer:1,archer:1}][(level-1)%8];return Object.assign({},req);}
 function mouseLevelUnlocked(level){return level<=mouseEco.defenseLevel;}
 function mouseLevelReady(level){return Object.entries(mouseLevelReq(level)).every(([id,n])=>(mouseEco.inventory[id]||0)>=n);}
@@ -1823,7 +1837,7 @@ function mouseCanCost(cost){return Object.entries(cost||{}).every(([k,v])=>(mous
 function mouseSpend(cost){if(!mouseCanCost(cost))return false;Object.entries(cost||{}).forEach(([k,v])=>mouseEco.resources[k]-=v);mouseLedger('gasto','Crafteo / actividad',Object.fromEntries(Object.entries(cost||{}).map(([k,v])=>[k,-v])));return true;}
 function mouseCraft(id){const m=MOUSE_TYPES.find(x=>x.id===id);if(!m||!mouseSpend(m.cost)){mouseMsg='Materiales insuficientes para fabricar ese ratón.';return;}mouseEco.inventory[id]=(mouseEco.inventory[id]||0)+1;mouseSave();mouseMsg='¡Fabricaste '+m.name+'! Se añadió a tu inventario.';}
 function mouseFarmUpgrade(){mouseFarmAccrue();const cost={madera:8*mouseEco.farm.level,semillas:6*mouseEco.farm.level};if(!mouseSpend(cost)){mouseMsg='Necesitas '+cost.madera+' madera y '+cost.semillas+' semillas para mejorar la granja.';mouseSave();return;}mouseEco.farm.level++;mouseEco.farm.plots=Math.min(8,mouseEco.farm.plots+1);mouseSave();mouseMsg='Granja mejorada: nivel '+mouseEco.farm.level+', parcela adicional.';}
-function mouseDefense(){if(mouseDefRunning)return;const deployed=MOUSE_TYPES.filter(m=>mouseSelected.includes(m.id)&&mouseEco.inventory[m.id]>0);if(!deployed.length){mouseMsg='Selecciona entre 1 y 3 clases de ratones con unidades disponibles.';return;}mouseDefRunning=true;const wave=mouseEco.defenseWins+mouseEco.defenseLosses,totalAtk=deployed.reduce((n,m)=>n+m.atk,0),totalHp=deployed.reduce((n,m)=>n+m.hp,0),enemyClass=['Pesados','Rápidos','Blindados','Grupos'][wave%4],counterBonus=deployed.filter(m=>m.counter===enemyClass).length*4;const enemy=8+(wave%4)*2,win=totalAtk+totalHp+counterBonus>=enemy*2.2;let casualties=win?Math.min(deployed.length,Math.max(0,Math.floor(enemy/5))):Math.min(deployed.length,Math.max(1,Math.ceil(enemy/3)));casualties= Math.min(casualties,deployed.length);deployed.slice(0,casualties).forEach(m=>mouseEco.inventory[m.id]=Math.max(0,mouseEco.inventory[m.id]-1));if(win){mouseEco.defenseWins++;mouseChange({comida:3,esencia:1},'Defensa rápida · victoria','ganancia');mouseMsg='¡Defensa victoriosa contra '+enemyClass+'! '+casualties+' ratón(es) perdidos. Recompensa: 3 comidas y 1 esencia.';}else{mouseEco.defenseLosses++;mouseChange({comida:1},'Defensa rápida · consuelo por derrota','ganancia');mouseMsg='La defensa cayó ante '+enemyClass+'. '+casualties+' ratón(es) se perdieron definitivamente. Recibiste 1 comida de consuelo.';}mouseSelected=mouseSelected.filter(id=>(mouseEco.inventory[id]||0)>0);mouseDefRunning=false;mouseSave();}
+function mouseDefense(){if(mouseDefRunning)return;const deployed=MOUSE_TYPES.filter(m=>mouseSelected.includes(m.id)&&mouseEco.inventory[m.id]>0);if(!deployed.length){mouseMsg='Selecciona entre 1 y 3 clases de ratones con unidades disponibles.';return;}mouseDefRunning=true;const wave=mouseEco.defenseWins+mouseEco.defenseLosses,totalAtk=deployed.reduce((n,m)=>n+m.atk,0),totalHp=deployed.reduce((n,m)=>n+m.hp,0),enemyClass=['Pesados','Rápidos','Blindados','Grupos'][wave%4],counterBonus=deployed.filter(m=>m.counter===enemyClass).length*4;const enemy=8+(wave%4)*2,win=totalAtk+totalHp+counterBonus>=enemy*2.2;let casualties=win?Math.min(deployed.length,Math.max(0,Math.floor(enemy/5))):Math.min(deployed.length,Math.max(1,Math.ceil(enemy/3)));casualties= Math.min(casualties,deployed.length);deployed.slice(0,casualties).forEach(m=>mouseEco.inventory[m.id]=Math.max(0,mouseEco.inventory[m.id]-1));if(win){mouseEco.defenseWins++;mouseEco.resources.comida+=3;mouseEco.resources.esencia+=1;mouseMsg='¡Defensa victoriosa contra '+enemyClass+'! '+casualties+' ratón(es) perdidos. Recompensa: 3 comidas y 1 esencia.';}else{mouseEco.defenseLosses++;mouseEco.resources.comida+=1;mouseMsg='La defensa cayó ante '+enemyClass+'. '+casualties+' ratón(es) se perdieron definitivamente. Recibiste 1 comida de consuelo.';}mouseSelected=mouseSelected.filter(id=>(mouseEco.inventory[id]||0)>0);mouseDefRunning=false;mouseSave();}
 function mouseMarketPost(id){const m=MOUSE_TYPES.find(x=>x.id===id);if(!m||mouseEco.inventory[id]<1){mouseMsg='No tienes esa unidad disponible para publicar.';return;}mouseEco.inventory[id]--;mouseEco.market.push({id:newId(),mouse:id,owner:profile?profile.nickname:'Jugador',price:{semillas:10+Math.floor(Math.random()*5),tela:2},time:Date.now()});mouseSave();mouseMsg='Oferta publicada en el mercado local. No es una oferta online todavía.';}
 function mouseHubAction(id){
  if(id==='mback'){state='menu';mouseTab='home';return;}

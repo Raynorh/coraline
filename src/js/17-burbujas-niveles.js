@@ -4,7 +4,7 @@
    disparo 🌈 arcoíris (toma el color que más grupo forme). Los niveles se generan con semilla: siempre son los mismos. */
 const MAXLV=30,RAINBOW=-2,IRON=-1;
 function seeded(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
-const BDIFF={facil:{ammo:10,col:-1,spec:.5,mice:0},normal:{ammo:3,col:0,spec:1,mice:0},dificil:{ammo:-2,col:0,spec:1.4,mice:1}};
+const BDIFF={facil:{ammo:10,col:-1,spec:.5,mice:0},normal:{ammo:3,col:0,spec:1,mice:0},dificil:{ammo:-2,col:0,spec:1.4,mice:1},experto:{ammo:-4,col:1,spec:1.55,mice:1}};
 function levelDef(n){const bd=BDIFF[diff]||BDIFF.normal;
  const rows=Math.min(9,4+Math.floor((n+1)/3)),ncol=Math.max(3,Math.min(6,3+Math.floor(n/5)+bd.col));
  const mice=Math.min(14,6+Math.floor(n/3)+bd.mice),s=bd.spec;

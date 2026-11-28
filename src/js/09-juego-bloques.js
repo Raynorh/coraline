@@ -17,7 +17,7 @@ const bPops=[];
 let bTime=0,bBest=0,bHints=1,bSwaps=1,bShapeJokers=1,bHintTarget=null,bPressure=0,bPressureMsg=false,bSkin=0,bJokerPicker=false;
 // Mejor puntaje previo de este perfil en Bloques (para el reto "a punto de superar el récord").
 function bBestScore(){try{const list=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');return list.filter(v=>v&&v.mode==='Bloques'&&(!profile||v.profileId===profile.id)).reduce((m,v)=>Math.max(m,Number(v.score)||0),0);}catch(e){return 0;}}
-const B_START=[0,0,8];// botones sueltos que ya hay al empezar
+const B_START=[0,0,8,6];// bloque inicial: Experto tiene menos clutter que Difícil para mantener apertura estratégica
 function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0;k<B_START[dIdx()];k++){let t=0,x,y;do{x=ri(BC);y=ri(BC);t++;}while(t<40&&bgrid[y][x]!==-1);bgrid[y][x]=ri(7);}bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
  bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bShapeJokers=1;bHintTarget=null;bPressure=0;bPressureMsg=false;bSkin=0;bJokerPicker=false;
  score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];clearTimeout(endTimer);endTimer=null;bpieces=bDeal();
@@ -26,10 +26,10 @@ function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0
 // La presión sube con el tiempo de juego (desde 1 min) y al acercarse al récord personal.
 function bUpdatePressure(){const timeP=clamp01((bTime/1000-60)/240),recP=bBest>0?clamp01((bscore-.6*bBest)/(.4*bBest)):0;bPressure=Math.max(timeP,recP);
  if(bPressure>.5&&!bPressureMsg){bPressureMsg=true;say('Gato Negro','El tablero se pone difícil… piensa bien dónde va cada botón.',3200);}}
-const B_EASY=[[7,6,6,3,4,2,2,5,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,2,2],[5,5,5,3,3,2,2,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,2,2],[3,3,3,3,3,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1]];
+const B_EASY=[[7,6,6,3,4,2,2,5,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,2,2],[5,5,5,3,3,2,2,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,2,2],[3,3,3,3,3,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1],[2,3,3,3,2,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1]];
 const B_HARD=[1,1,1,1,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5];
 function bNormalizeCells(cells){const mx=Math.min(...cells.map(c=>c[0])),my=Math.min(...cells.map(c=>c[1]));return cells.map(([x,y])=>[x-mx,y-my]);}
-function bPiece(){const base=B_EASY[dIdx()],hard=B_HARD.map(v=>v*(dIdx()===0?.65:dIdx()===1?.85:1)),w=base.map((v,i)=>v*(1-bPressure)+hard[i]*bPressure);
+function bPiece(){const base=B_EASY[dIdx()],hard=B_HARD.map(v=>v*(dIdx()===0?.65:dIdx()===1?.85:dIdx()===2?1:1.08)),w=base.map((v,i)=>v*(1-bPressure)+hard[i]*bPressure);
  let roll=Math.random()*w.reduce((a,b)=>a+b,0),idx=0;for(;idx<w.length-1;idx++){roll-=w[idx];if(roll<=0)break;}
  return{cells:bNormalizeCells(BSHAPES[idx]),color:ri(7)};}
 function bCanOn(g,piece,x,y){return piece.cells.every(([dx,dy])=>x+dx>=0&&x+dx<BC&&y+dy>=0&&y+dy<BC&&g[y+dy][x+dx]===-1);}

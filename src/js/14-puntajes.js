@@ -11,12 +11,12 @@ const GAMES={
  runner:{n:'Corredor 2D',ico:'🏃',modes:{endless:'Sin fin'}},
  runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}},
  fruit:{n:'Frutillas',ico:'🍓',modes:{classic:'Clásico'}}};
-const DIFF_NAMES={facil:'Fácil',normal:'Medio',dificil:'Difícil',experto:'Difícil'};
+const DIFF_NAMES={facil:'Fácil',normal:'Medio',dificil:'Difícil',experto:'Experto'};
 // Modo de juego actual (clave estable que se guarda junto al puntaje).
 function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':mode==='fruit'?'classic':'endless';}
 const ScoreStore={
  KEY:'coraline_scores_v3',
- all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l.map(e=>e&&e.diff==='experto'?Object.assign({},e,{diff:'dificil'}):e):[];}catch(e){return [];}},
+ all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l.filter(e=>e&&DIFF_NAMES[e.diff]):[];}catch(e){return [];}},
  save(l){try{localStorage.setItem(this.KEY,JSON.stringify(l.slice(-3000)));}catch(e){}},
  add(e){const l=this.all();l.push(e);this.save(l);return e;},
  // Mejor puntaje de cada perfil en un juego/modo (y dificultad opcional), de mayor a menor.

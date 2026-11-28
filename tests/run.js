@@ -26,9 +26,13 @@ ok(/const VERSION='v\d+\.\d+\.\d+'/.test(js), 'VERSION presente: ' + (js.match(/
 const blocks = fs.readFileSync(path.join(root, 'src/js/09-juego-bloques.js'), 'utf8');
 ok((blocks.match(/\[\[0,0\]\]/g)||[]).length>0 && /const BSHAPES=/.test(blocks) && blocks.includes('bNormalizeCells'), 'Bloques: catálogo de piezas ampliado y normalización de figuras');
 ok(blocks.includes('if(++nodes>12000){exhausted=true;return false;}') && blocks.includes('if(exhausted)return false;'), 'Bloques: búsqueda DFS con límite explícito sin falsa solvencia');
+ok(/B_START=\[0,0,8,6\]/.test(blocks)&&/const B_EASY=\[[\s\S]*?\],\[[\s\S]*?\],\[[\s\S]*?\],\[[\s\S]*?\]\]/.test(blocks), 'Bloques: perfil de piezas y apertura calibrados para Experto');
 ok(/bShapeJokers=1/.test(blocks) && /bUseShapeJoker/.test(blocks) && /bChooseShape/.test(blocks), 'Bloques: comodín de sustitución de forma');
 const diffSrc=fs.readFileSync(path.join(root,'src/js/05-estado.js'),'utf8');
-ok(/DIFF_KEYS=\['facil','normal','dificil'\]/.test(diffSrc) && /n:'Medio'/.test(diffSrc) && /old==='experto'/.test(diffSrc), 'Dificultad: tres niveles y migración no destructiva de Experto');
+ok(/DIFF_KEYS=\['facil','normal','dificil','experto'\]/.test(diffSrc) && /experto:\{n:'Experto'/.test(diffSrc) && /cor_diff_v4/.test(diffSrc), 'Dificultad: cuatro niveles y migración que conserva Experto');
+const scoresSrc=fs.readFileSync(path.join(root,'src/js/14-puntajes.js'),'utf8');ok(/experto:'Experto'/.test(scoresSrc)&&! /e\.diff==='experto'[^;]*dificil/.test(scoresSrc), 'Scores: Experto permanece separado y se identifica correctamente');
+const selSrc=fs.readFileSync(path.join(root,'src/js/08-seleccion.js'),'utf8');ok(/\['de','Experto','experto'\]/.test(selSrc)&&/id==='de'/.test(selSrc), 'UI: Experto disponible en selección');
+const panelSrc=fs.readFileSync(path.join(root,'src/js/16-ui-paneles.js'),'utf8');ok(/'all','facil','normal','dificil','experto'/.test(panelSrc), 'Scores: filtro de Experto en rankings');
 const eco=fs.readFileSync(path.join(root,'src/js/23-ecosistema-ratones.js'),'utf8');
 ok(/function mouseFarmAccrue/.test(eco)&&/function mouseCraft/.test(eco)&&/function mouseDefense/.test(eco)&&/function mouseMarketPost/.test(eco), 'Ecosistema: granja, fabricación, defensa y mercado local prototipo');
 

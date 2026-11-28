@@ -12,17 +12,30 @@ const fogs=Array.from({length:6},(_,i)=>({x:rnd(0,W),y:380+i*55,r:rnd(110,180),s
 const DIFF={
  facil:{n:'Fácil',ammo:34,colors:4,rows:3,t:1300,garb:3,rise:0,sv:280,ramp:30},
  normal:{n:'Medio',ammo:30,colors:4,rows:4,t:900,garb:4,rise:0,sv:180,ramp:55},
- dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55}};
-const DIFF_KEYS=['facil','normal','dificil'];
+ dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55},
+ experto:{n:'Experto',ammo:22,colors:5,rows:5,t:560,garb:7,rise:22,sv:108,ramp:60}};
+const DIFF_KEYS=['facil','normal','dificil','experto'];
 function dIdx(){return Math.max(0,DIFF_KEYS.indexOf(diff));}
-// Migración única de la preferencia guardada (los nombres cambiaron de significado en v0.8.0).
-try{if(localStorage.getItem('cor_diff_v3')!=='1'){const old=localStorage.getItem('cor_diff');if(old==='experto')localStorage.setItem('cor_diff','dificil');if(!['facil','normal','dificil'].includes(localStorage.getItem('cor_diff')))localStorage.setItem('cor_diff','normal');localStorage.setItem('cor_diff_v3','1');}}catch(e){}
+// Migración de preferencias: conserva Experto si estaba seleccionado; no degrada a Difícil.
+try{if(localStorage.getItem('cor_diff_v4')!=='1'){const old=localStorage.getItem('cor_diff');if(!DIFF_KEYS.includes(old))localStorage.setItem('cor_diff','normal');localStorage.setItem('cor_diff_v4','1');}}catch(e){}
 try{const m=localStorage.getItem('cor_mode'),d=localStorage.getItem('cor_diff');if(['tetris','bubble','blocks','snake','kong','runner','runner3d','fruit'].includes(m))mode=m;if(DIFF[d])diff=d;}catch(e){}
 function saveSel(){try{localStorage.setItem('cor_mode',mode);localStorage.setItem('cor_diff',diff);}catch(e){}}
 let blocksStyle='rounded',profile=null,snakeWrap=false,snakeCtl='',tetrisMode='rescue',bubbleMode='levels',bubbleLevel=1,bMice=6;
 let lastPtr='mouse';const IS_TOUCH=(window.matchMedia&&matchMedia('(pointer: coarse)').matches)||('ontouchstart' in window);
 function prefsObj(){return{blocksStyle,snakeWrap,snakeCtl,tetrisMode,bubbleMode};}
 function savePrefs(){if(profile)persistProfile();else{try{localStorage.setItem('cor_blocks_style',blocksStyle);localStorage.setItem('cor_snake_wrap',snakeWrap?'1':'0');localStorage.setItem('cor_tetris_mode',tetrisMode);localStorage.setItem('cor_bubble_mode',bubbleMode);localStorage.setItem('cor_snake_ctl',snakeCtl);}catch(e){}}}
+// REINICIO GLOBAL v2: una nueva versión del juego obliga a todos los navegadores
+// actualizados a comenzar sin perfiles, progreso ni puntajes locales. No borra
+// ajustes de audio ni la configuración de conexión Supabase.
+const GLOBAL_RESET_EPOCH='coraline-reset-2026-11-28';
+function applyGlobalResetIfNeeded(){try{if(localStorage.getItem('coraline_global_reset_epoch')===GLOBAL_RESET_EPOCH)return;
+ const exact=['coraline_profiles','coraline_profile','coraline_scores','coraline_scores_v2','coraline_scores_v3','coraline_scores_migrated_v1','coraline_scores_migrated_v3','coraline_carolina_id','coraline_global_reset_epoch','cor_sb_queue','cor_sb_names','cor_sb_backfill'];
+ exact.forEach(k=>localStorage.removeItem(k));
+ // Progreso e inventarios ligados a perfiles anteriores, además de invitado.
+ const remove=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(k.startsWith('cor_mouse_economy_v1')||k.startsWith('cor_bprog_')))remove.push(k);}remove.forEach(k=>localStorage.removeItem(k));
+ localStorage.setItem('coraline_global_reset_epoch',GLOBAL_RESET_EPOCH);
+ }catch(e){}}
+applyGlobalResetIfNeeded();
 const LEGACY_PROFILE_ID='00000000-0000-4000-8000-000000000001';
 // Identidad interna de Carolina. No se infiere por apodo.
 // Permanece vacía hasta confirmar el perfil auténtico; también se lee coraline_carolina_id.
@@ -38,7 +51,7 @@ function migrateScores(){const flag='coraline_scores_migrated_v1';try{if(localSt
 function bootProfile(){migrateScores();try{const saved=localStorage.getItem('cor_blocks_style');if(saved==='square'||saved==='rounded')blocksStyle=saved;snakeWrap=localStorage.getItem('cor_snake_wrap')==='1';tetrisMode=localStorage.getItem('cor_tetris_mode')==='classic'?'classic':'rescue';{const bm=localStorage.getItem('cor_bubble_mode');bubbleMode=(bm==='endless'||bm==='rescue')?'endless':'levels';}const id=localStorage.getItem('coraline_profile');const found=loadProfiles().find(p=>p.id===id);if(found)applyProfile(found);}catch(e){}}
 function renderProfiles(){const box=document.getElementById('profile-list');const list=loadProfiles();box.innerHTML=list.map(p=>'<button type="button" class="'+(profile&&profile.id===p.id?'on':'')+'" data-id="'+p.id+'">'+esc(p.nickname||'Jugador')+(profile&&profile.id===p.id?' · actual':'')+'</button>').join('')||'<p>Crea tu primer perfil.</p>';box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const next=loadProfiles().find(p=>p.id===b.dataset.id);if(!next)return;applyProfile(next);persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profiles').style.display='none';playGeneralGreeting();});}
 function openProfiles(){renderProfiles();document.getElementById('profiles').style.display='block';}
-function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18)||'Jugador';if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
+function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18);if(!nick){document.getElementById('profile-name').focus();return;}if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
 bootProfile();
 document.getElementById('profile-create').onclick=createNamedProfile;
 document.getElementById('profile-close').onclick=()=>{if(!profile)return;document.getElementById('profiles').style.display='none';};
