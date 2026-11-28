@@ -8,9 +8,9 @@ function act(id){if(actNew(id))return;
  else if(id==='resume'){state='play';setMusic('partida');setPowerBtns(true);}
  else if(id==='menu')toMenu();}
 cv.addEventListener('pointermove',e=>{const ox=mouseX,oy=mouseY;pos(e);if(state==='play'&&mode==='fruit')fAim(mouseX);if(sSwipe&&state==='play'&&mode==='snake')sSwipeMove(mouseX,mouseY);if(bdragging&&(Math.abs(mouseX-(bdragStart?.x??mouseX))>3||Math.abs(mouseY-(bdragStart?.y??mouseY))>3))bdragMoved=true;});
-function enterGame(){if(state!=='splash')return;unlock();state='menu';setMusic('intro');if(!profile){openProfiles();return;}playGeneralGreeting();}
+function enterGame(){if(state!=='splash')return;unlock();state='menu';setMusic('intro');if(typeof refreshHomeRecords==='function')refreshHomeRecords();if(!profile){openProfiles();return;}playGeneralGreeting();}
 cv.addEventListener('pointerdown',e=>{pos(e);if(state==='splash'){enterGame();return;}unlock();
- const h=hits.find(h=>mouseX>=h.x&&mouseX<=h.x+h.w&&mouseY>=h.y&&mouseY<=h.y+h.h);
+ const h=bJokerPicker&&state==='play'&&mode==='blocks'?hits.slice().reverse().find(h=>mouseX>=h.x&&mouseX<=h.x+h.w&&mouseY>=h.y&&mouseY<=h.y+h.h):hits.find(h=>mouseX>=h.x&&mouseX<=h.x+h.w&&mouseY>=h.y&&mouseY<=h.y+h.h);
  if(h){if(state==='play'&&mode==='blocks'&&/^bp[0-2]$/.test(h.id)){act(h.id);bdragging=true;bdragMoved=false;bdragStart={x:mouseX,y:mouseY};try{cv.setPointerCapture(e.pointerId);}catch(_){}}else act(h.id);return;}
  if(state==='play'&&mode==='blocks'){bPointer();return;}if(state==='play'&&mode==='fruit'){fAim(mouseX);fDown=true;return;}if(state==='play'&&mode==='snake'){if(snakeCtl==='swipe'){sSwipe={x:mouseX,y:mouseY,moved:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}}else{const z=sXTurn(mouseX,mouseY);if(z){sTouchZone=z;setTimeout(()=>{sTouchZone='';},180);}}return;}if(state==='play'&&mode==='bubble'&&mouseY>TOP){if(armed&&mouseY<CY-30){tryMagicPlace(mouseX,mouseY);return;}if(e.pointerType==='mouse')shoot();else{aiming=true;try{cv.setPointerCapture(e.pointerId);}catch(_){}}}});
 function endAim(e){if(aiming){aiming=false;pos(e);if(state==='play'){if(mouseY>CANCEL_Y){say('Gato Negro','Disparo cancelado. Apunta de nuevo.',1400);}else shoot();}}}

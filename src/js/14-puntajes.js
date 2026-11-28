@@ -11,12 +11,12 @@ const GAMES={
  runner:{n:'Corredor 2D',ico:'🏃',modes:{endless:'Sin fin'}},
  runner3d:{n:'Corredor 3D',ico:'🏁',modes:{endless:'Sin fin'}},
  fruit:{n:'Frutillas',ico:'🍓',modes:{classic:'Clásico'}}};
-const DIFF_NAMES={facil:'Fácil',normal:'Normal',dificil:'Difícil',experto:'Experto'};
+const DIFF_NAMES={facil:'Fácil',normal:'Medio',dificil:'Difícil',experto:'Difícil'};
 // Modo de juego actual (clave estable que se guarda junto al puntaje).
 function modeKey(){return mode==='bubble'?(bubbleMode==='endless'?'endless':'levels'):mode==='tetris'?tetrisMode:mode==='snake'?(snakeWrap?'wrap':'walls'):mode==='blocks'?'classic':mode==='kong'?'story':mode==='fruit'?'classic':'endless';}
 const ScoreStore={
  KEY:'coraline_scores_v3',
- all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l:[];}catch(e){return [];}},
+ all(){try{const l=JSON.parse(localStorage.getItem(this.KEY)||'[]');return Array.isArray(l)?l.map(e=>e&&e.diff==='experto'?Object.assign({},e,{diff:'dificil'}):e):[];}catch(e){return [];}},
  save(l){try{localStorage.setItem(this.KEY,JSON.stringify(l.slice(-3000)));}catch(e){}},
  add(e){const l=this.all();l.push(e);this.save(l);return e;},
  // Mejor puntaje de cada perfil en un juego/modo (y dificultad opcional), de mayor a menor.
@@ -25,6 +25,9 @@ const ScoreStore={
  best(profileId,game,m){return this.all().reduce((mx,e)=>(e.profileId===profileId&&e.game===game&&e.mode===m)?Math.max(mx,e.score):mx,0);},
  // Posición entre todos los perfiles guardados en este dispositivo (el ranking global llegará con Supabase).
  rank(profileId,game,m){const t=this.top(game,m,'all',9999),i=t.findIndex(e=>e.profileId===profileId);return i<0?null:{pos:i+1,total:t.length};}};
+let homeRemotePending=false,homeRemoteAt=0;
+function refreshHomeRecords(){if(!SB.on()||homeRemotePending||Date.now()-homeRemoteAt<45000)return;homeRemotePending=true;homeRemoteAt=Date.now();const jobs=Object.keys(GAMES).map(g=>SB.top(g,Object.keys(GAMES[g].modes)[0],'all'));Promise.all(jobs).then(()=>{homeRemotePending=false;}).catch(()=>{homeRemotePending=false;});}
+function homeRecordFor(game,modeName){const key=game+'|'+modeName+'|all';if(SB.on()&&SB.cache[key]&&SB.cache[key].length)return SB.cache[key][0];return ScoreStore.top(game,modeName,'all',1)[0]||null;}
 const scoreBest=(p,g,m)=>ScoreStore.best(p,g,m),scoreRank=(p,g,m)=>ScoreStore.rank(p,g,m);
 // Migración no destructiva v2 → v3 (coraline_scores y coraline_scores_v2 se conservan intactos).
 function migrateScoresV3(){try{if(localStorage.getItem('coraline_scores_migrated_v3')==='1')return;
@@ -35,7 +38,7 @@ function migrateScoresV3(){try{if(localStorage.getItem('coraline_scores_migrated
   l.push({id:newId(),profileId:v.profileId||LEGACY_PROFILE_ID,nickname:String(v.name||'Jugador').slice(0,18),game:m[0],mode:m[1],diff:'normal',score:Number(v.score)||0,level:null,createdAt:'',dateLabel:String(v.date||''),legacyKey:lk});});
  ScoreStore.save(l);localStorage.setItem('coraline_scores_migrated_v3','1');}catch(e){}}
 migrateScoresV3();
-function recordScore(extra){if(scoreRecorded)return;scoreRecorded=true;const sc=Math.floor(Number(score)||0);if(sc<=0)return;
+function recordScore(extra){if(scoreRecorded)return;scoreRecorded=true;const sc=Math.floor(Number(score)||0);if(sc<=0)return;try{mouseRewardFromMinigame(mode,sc,diff);}catch(_){ }
  {const e=Object.assign({id:newId(),profileId:profile?profile.id:LEGACY_PROFILE_ID,nickname:profile?profile.nickname:'Jugador',game:mode,mode:modeKey(),diff:diff,score:sc,level:null,createdAt:new Date().toISOString()},extra||{});ScoreStore.add(e);try{SB.add(e);}catch(_){}}}
 function modeLabel(){const G=GAMES[mode];return G?G.n+' · '+G.modes[modeKey()]:mode;}
 // Texto de la pantalla de derrota según el modo.

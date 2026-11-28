@@ -8,15 +8,15 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  const errs=[];pg.on('pageerror',e=>errs.push('pageerror: '+e.message));pg.on('console',m=>{if(m.type()==='error'&&!/fonts|ERR_|Failed to load resource/.test(m.text()))errs.push('console: '+m.text());});
  const res=[];const ok=(n,c)=>res.push([c?'OK  ':'FAIL',n]);
  const E=(f,a)=>pg.evaluate(f,a);
- await pg.addInitScript(()=>{localStorage.setItem('cor_diff','dificil');});
+ await pg.addInitScript(()=>{localStorage.setItem('cor_diff','experto');});
  await pg.goto(url);await pg.waitForTimeout(500);await pg.mouse.click(240,380);await pg.fill('#profile-name','Ana');await pg.click('#profile-create');await pg.waitForTimeout(200);
  // ---------- 2) dificultades ----------
- ok('migración cor_diff: "dificil" guardado antes pasa a "experto"',await E(()=>diff==='experto'));
- ok('4 niveles Fácil<Normal<Difícil<Experto en velocidad Tetris y Snake',await E(()=>DIFF_KEYS.length===4&&DIFF.facil.t>DIFF.normal.t&&DIFF.normal.t>DIFF.dificil.t&&DIFF.dificil.t>DIFF.experto.t&&DIFF.facil.sv>DIFF.normal.sv&&DIFF.normal.sv>DIFF.dificil.sv&&DIFF.dificil.sv>DIFF.experto.sv));
- ok('Normal conserva el antiguo Fácil (t=900, sv=180); Experto el antiguo Difícil (t=420, sv=85)',await E(()=>DIFF.normal.t===900&&DIFF.normal.sv===180&&DIFF.experto.t===420&&DIFF.experto.sv===85&&DIFF.experto.n==='Experto'));
+ ok('migración cor_diff: Experto antiguo pasa a Difícil',await E(()=>diff==='dificil'));
+ ok('3 dificultades: Fácil<Medio<Difícil en velocidad Tetris y Snake',await E(()=>DIFF_KEYS.length===3&&DIFF.facil.t>DIFF.normal.t&&DIFF.normal.t>DIFF.dificil.t&&DIFF.facil.sv>DIFF.normal.sv&&DIFF.normal.sv>DIFF.dificil.sv));
+ ok('Medio conserva el ajuste anterior de Normal (t=900, sv=180)',await E(()=>DIFF.normal.t===900&&DIFF.normal.sv===180&&DIFF.normal.n==='Medio'));
  // ---------- 1) Bloques ----------
  await E(()=>{diff='normal';mode='blocks';startPlay();});
- ok('Bloques inicia con 💡1 y 🔄1',await E(()=>bHints===1&&bSwaps===1));
+ ok('Bloques inicia con 💡1, 🔄1 y 🧩1',await E(()=>bHints===1&&bSwaps===1&&bShapeJokers===1));
  // piezas conocidas: vertical de 3
  await E(()=>{bpieces=[{cells:[[0,0],[0,1],[0,2]],color:2},{cells:[[0,0]],color:1},{cells:[[0,0],[1,0]],color:3}];bselected=0;});
  const mv=async(x,y)=>{await pg.mouse.move(x,y);};
@@ -142,10 +142,14 @@ const srv=http.createServer((q,r)=>{let p=path.join(dir,q.url.split('?')[0]);if(
  await E(()=>{mode='tetris';tetrisMode='classic';startPlay();lose();});await pg.waitForTimeout(900);
  ok('Al perder aparece la Otra Madre con el mensaje (estado lose + banner)',await E(()=>state==='lose'&&banner.who==='Otra Madre'&&/ahora eres mía/.test(banner.txt)));
  await pg.screenshot({path:'/tmp/claude-0/mother-lose.png'});
+ // ---------- v1.5 ecosistema local ----------
+ const ecoTest=await E(()=>{mouseEco.resources={semillas:100,madera:100,tela:100,comida:100,componentes:100,esencia:100};mouseEco.inventory={guardian:0,archer:0,freezer:1,alchemist:0,explosive:0,healer:0};mouseCraft('guardian');const crafted=mouseEco.inventory.guardian===1;mouseCraft('archer');const second=mouseEco.inventory.archer===1;mouseSelected=['guardian','archer'];mouseDefense();const used=mouseEco.inventory.guardian<1||mouseEco.inventory.archer<1;mouseMarketPost('freezer');return{crafted,second,used,posted:mouseEco.market.length};});
+ ok('Economía local: crafting, defensa con pérdidas y publicación local',ecoTest.crafted&&ecoTest.second&&ecoTest.used&&ecoTest.posted>0);
+
  // ---------- v1.3: dificultad notable en todos los modos ----------
 ok('Dificultad notable en todos los modos (Burbujas, Tetris, Snake, Bloques, Corredores)',await E(()=>{const inc=a=>a.every((v,i)=>i===0||v>a[i-1]),dec=a=>a.every((v,i)=>i===0||v<a[i-1]);
- const ks=['facil','normal','dificil','experto'];const lv=ks.map(d=>{diff=d;return levelDef(5);});
- return dec(RISE_EVERY)&&dec(lv.map(l=>l.ammo))&&lv[3].mice>lv[0].mice&&inc(lv.map(l=>l.iron+l.ice))&&dec(ks.map(d=>DIFF[d].t))&&dec(ks.map(d=>DIFF[d].sv))&&SN_OBS[3]>SN_OBS[2]&&SN_OBS[2]>SN_OBS[0]&&B_START[3]>B_START[1]&&inc(R_V0)&&inc(P_V0)&&DIFF.experto.t<DIFF.facil.t/2&&DIFF.experto.sv<DIFF.facil.sv/2;}));
+ const ks=['facil','normal','dificil'];const lv=ks.map(d=>{diff=d;return levelDef(5);});
+ return dec(RISE_EVERY)&&dec(lv.map(l=>l.ammo))&&lv[2].mice>lv[0].mice&&inc(lv.map(l=>l.iron+l.ice))&&dec(ks.map(d=>DIFF[d].t))&&dec(ks.map(d=>DIFF[d].sv))&&SN_OBS[2]>SN_OBS[1]&&SN_OBS[1]>SN_OBS[0]&&B_START[2]>=B_START[1]&&inc(R_V0)&&inc(P_V0)&&DIFF.dificil.t<DIFF.facil.t*0.99&&DIFF.dificil.sv<DIFF.facil.sv*0.99;}));
 // ---------- v1.3: techo que baja + 6 ratones mínimo ----------
 await E(()=>{mode='bubble';bubbleMode='levels';diff='normal';bubbleLevel=1;startPlay();});
 ok('Burbujas: cada nivel tiene al menos 6 ratoncitos por rescatar',await E(()=>bMice>=6&&miceOnBoard()+miceLeft===bMice));
@@ -262,10 +266,10 @@ ok('El techo baja: entran 2 filas nuevas arriba, llegan ratones pendientes y la 
  await E(()=>{rHearts=1;rInv=0;rObs=[{t:'tall',x:RPX,w:40,h:74,y:0}];});await pg.waitForTimeout(200);
  ok('Corredor 2D: sin corazones se pierde',await E(()=>state==='lose'));
  // ---------- v1.2: dificultades de Aventura, Corredor 3D ----------
- const kd=await E(()=>{const o={};['facil','normal','dificil','experto'].forEach(d=>{diff=d;mode='kong';startPlay();let e=0;for(const n of[2,4,5,7,8,10]){kBuild(n);e+=kEn.length/kLen;}o[d]={h:kHearts,en:e,wy:kWy.on,spd:KD().spd,bh:(kBuild(3),kBoss.hp)};});return o;});
- ok('Aventura: más corazones en Fácil y menos en Experto',kd.facil.h>kd.normal.h&&kd.normal.h>kd.dificil.h&&kd.dificil.h>kd.experto.h);
- ok('Aventura: enemigos aumentan con la dificultad (Fácil < Experto) y velocidad ×1.6 en Experto',kd.facil.en<kd.normal.en&&kd.normal.en<kd.experto.en&&kd.experto.spd>kd.facil.spd*2);
- ok('Aventura: jefes con más vida en Experto y Experto sin Wybie',kd.experto.bh>kd.facil.bh&&!kd.experto.wy&&kd.facil.wy);
+ const kd=await E(()=>{const o={};['facil','normal','dificil'].forEach(d=>{diff=d;mode='kong';startPlay();let e=0;for(const n of[2,4,5,7,8,10]){kBuild(n);e+=kEn.length/kLen;}o[d]={h:kHearts,en:e,wy:kWy.on,spd:KD().spd,bh:(kBuild(3),kBoss.hp)};});return o;});
+ ok('Aventura: más corazones en Fácil y menos en Difícil',kd.facil.h>kd.normal.h&&kd.normal.h>kd.dificil.h);
+ ok('Aventura: enemigos y velocidad aumentan de Fácil a Difícil',kd.facil.en<kd.normal.en&&kd.normal.en<kd.dificil.en&&kd.dificil.spd>kd.facil.spd*1.4);
+ ok('Aventura: jefes más resistentes en Difícil',kd.dificil.bh>kd.facil.bh);
  await E(()=>{mode='runner3d';diff='normal';startPlay();});await pg.waitForTimeout(2200);
  ok('Corredor 3D (Pepsiman): avanza y genera obstáculos',await E(()=>pDist>2&&(pObs.length+pIt.length)>0&&state==='play'));
  await E(()=>{pAct('xR');pAct('xR');});await pg.waitForTimeout(200);

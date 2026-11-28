@@ -26,7 +26,7 @@ let sbLoadKey='';
 function renderScores(fetchRemote){const G=GAMES[scGame];if(!G.modes[scMode])scMode=Object.keys(G.modes)[0];
  $('scores-tabs').innerHTML=Object.keys(GAMES).map(g=>'<button class="chip'+(g===scGame?' on':'')+'" data-g="'+g+'" type="button">'+GAMES[g].ico+' '+GAMES[g].n+'</button>').join('');
  $('scores-modes').innerHTML=Object.keys(G.modes).map(m=>'<button class="chip'+(m===scMode?' on':'')+'" data-m="'+m+'" type="button">'+G.modes[m]+'</button>').join('')+
-  '<br>'+['all','facil','normal','dificil','experto'].map(d=>'<button class="chip'+(d===scDiff?' on':'')+'" data-d="'+d+'" type="button">'+(d==='all'?'Todas':DIFF_NAMES[d])+'</button>').join('');
+  '<br>'+['all','facil','normal','dificil'].map(d=>'<button class="chip'+(d===scDiff?' on':'')+'" data-d="'+d+'" type="button">'+(d==='all'?'Todas':DIFF_NAMES[d])+'</button>').join('');
  let top=ScoreStore.top(scGame,scMode,scDiff,10),src=SB.on()?'wait':'local';const rk=scGame+'|'+scMode+'|'+scDiff;
  if(SB.on()){if(SB.cache[rk]){top=SB.cache[rk];src='cloud';}
   if(fetchRemote!==false&&sbLoadKey!==rk){sbLoadKey=rk;SB.flush().then(()=>SB.top(scGame,scMode,scDiff)).then(r=>{sbLoadKey='';if($('scores-panel').style.display==='block')renderScores(false);if(!r)SB.cache[rk]=SB.cache[rk];});}

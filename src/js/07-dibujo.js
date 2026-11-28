@@ -58,7 +58,11 @@ function drawMenu(){drawSky();moonButton(385,255,58);drawFog(.18);drawPalace();d
  // botón discreto de historia
  const ix=436,iy=724,ih=mouseX>ix-17&&mouseX<ix+17&&mouseY>iy-17&&mouseY<iy+17;ctx.fillStyle=ih?'#4a1d78':'rgba(42,19,70,.7)';ctx.beginPath();ctx.arc(ix,iy,17,0,TAU);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=2;ctx.stroke();
  txt('!',ix,iy+6,'900 18px Quicksand,sans-serif','#e9c6ff');hits.push({x:ix-17,y:iy-17,w:34,h:34,id:'info'});
- txt('Hecho con amor para ti 💚',240,206,'500 13px Quicksand,sans-serif','#b79cd6');}
+ txt('🏆 ¡Reta los récords '+(SB&&SB.on()?'compartidos':'de este dispositivo')+'!',240,224,'800 13px Quicksand,sans-serif','#ffd166');
+ try{const entries=GAMES?Object.keys(GAMES).map(g=>{const mm=Object.keys(GAMES[g].modes)[0],top=homeRecordFor(g,mm);return top?{g,mm,top}:null;}).filter(Boolean).sort((a,b)=>b.top.score-a.top.score).slice(0,3):[];
+  entries.forEach((e,i)=>{const x=45+i*132;ctx.fillStyle='rgba(24,10,40,.94)';rr(x,232,126,54,10);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=1.4;rr(x,232,126,54,10);ctx.stroke();txt(GAMES[e.g].ico+' '+GAMES[e.g].n,x+63,248,'800 11px Quicksand,sans-serif','#e9c6ff');txt(e.top.score.toLocaleString('es-CL'),x+63,264,'900 14px Quicksand,sans-serif','#ffd166');txt(e.top.nickname,x+63,278,'700 9px Quicksand,sans-serif','#8fe9c9');});}catch(_){ }
+ menuBtn('🐭 Granja · Ratones · Defensa',620,'mousehub','#8fe9c9');
+ txt('Hecho con amor para ti 💚',240,674,'500 13px Quicksand,sans-serif','#b79cd6');}
 function drawCat(){const x=130,y=700;ctx.fillStyle='#07040c';
  ctx.beginPath();ctx.ellipse(x,y+8,26,30,0,0,TAU);ctx.fill();ctx.beginPath();ctx.arc(x,y-28,19,0,TAU);ctx.fill();
  ctx.beginPath();ctx.moveTo(x-18,y-38);ctx.lineTo(x-14,y-58);ctx.lineTo(x-3,y-44);ctx.fill();ctx.beginPath();ctx.moveTo(x+18,y-38);ctx.lineTo(x+14,y-58);ctx.lineTo(x+3,y-44);ctx.fill();

@@ -1,6 +1,6 @@
 # Coraline y el Rescate de los Ratones
 
-Juego HTML5 Canvas (480×760) con siete juegos: Burbujas, Tetris, Bloques, Snake, Aventura, Corredor 2D y Corredor 3D. Sin dependencias.
+Juego HTML5 Canvas (480×760) con ocho juegos: Burbujas, Tetris, Bloques, Snake, Aventura, Corredor 2D y Corredor 3D. Sin dependencias.
 
 ## Comandos
 ```bash
@@ -12,7 +12,7 @@ npm run serve    # servidor local
 
 ## Estructura
 - `original/` entrega original (no se toca; hash en `SHA256SUMS`).
-- `src/` código fuente por secciones (`src/js/00…12`, `styles/base.css`, `template.html`).
+- `src/` código fuente por secciones (`src/js/00…23`, `styles/base.css`, `template.html`).
 - `assets/audio/` MP3 (voces, saludo de puerta, música). El build los incrusta como `data:` URI.
 - `tools/` build, serve, split-original, patch-v0.7.0.
 - `tests/run.js` estáticas · `tests/smoke.js` funcionales en navegador.
@@ -35,6 +35,14 @@ npm run test:all         # todo junto
 ## v1.0.0 — seis juegos
 Burbujas (campaña de 30 niveles + sin fin), Tetris, Bloques, Snake, Aventura (plataformas) y Corredor. Para publicar: `npm run release`, luego `git add -A`, `git commit`, `git push` (un comando por línea en PowerShell).
 
+
+
+## v1.5.0 — ajustes y ecosistema de ratones
+- Selector global: Fácil, Medio, Difícil; Expertos antiguos migran a Difícil.
+- Bloques: 25 figuras, generador con búsqueda DFS estricta y comodín de forma.
+- El menú muestra récords reales; si Supabase está conectado intenta cargar el ranking compartido, si no usa récords locales.
+- Prototipo local de economía: recursos de minijuegos, granja (producción offline limitada), fabricación, defensa con pérdidas y ofertas locales.
+- El mercado todavía no tiene compra/transferencia entre cuentas; requiere backend transaccional antes de comerciar online.
 
 ## v1.3.0 — ranking compartido (Supabase)
 1. En Supabase: **SQL Editor → New query**, pega `docs/supabase_setup_v1.3.sql` y pulsa **Run**.

@@ -1,50 +1,53 @@
 /* ================= MODO BLOQUES (inspirado en Block Blast) ================= */
 const BC=8,BS=43,BX=68,BY=105;
 const BSHAPES=[
- [[0,0],[1,0],[2,0]], [[0,0],[0,1],[0,2]], [[0,0],[1,0],[0,1],[1,1]],
- [[0,0],[1,0],[2,0],[1,1]], [[0,0],[0,1],[1,1],[1,2]],
- [[1,0],[0,1],[1,1],[2,1]], [[0,0],[1,0],[2,0],[3,0]],
+ [[0,0]], [[0,0],[1,0]], [[0,0],[1,0],[2,0]], [[0,0],[0,1],[0,2]],
+ [[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[3,0]], [[0,0],[0,1],[0,2],[0,3]],
+ [[0,0],[1,0],[2,0],[1,1]], [[0,0],[1,0],[2,0],[1,-1]],
+ [[0,0],[0,1],[1,1]], [[0,0],[1,0],[1,1]], [[0,0],[1,0],[2,0],[2,1]], [[0,0],[0,1],[0,2],[1,2]],
+ [[0,0],[1,0],[2,0],[0,1]], [[0,0],[1,0],[2,0],[2,-1]],
  [[0,0],[1,0],[0,1],[1,1],[0,2]], [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],
- [[0,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[2,1],[2,2]]
+ [[0,0],[1,0],[2,0],[0,1],[0,2]], [[0,0],[0,1],[1,1],[2,1]],
+ [[0,0],[1,0],[2,0],[0,1],[2,1]], [[0,0],[0,1],[0,2],[1,0],[1,1]],
+ [[0,0],[1,0],[2,0],[3,0],[4,0]], [[0,0],[0,1],[0,2],[0,3],[0,4]],
+ [[0,0],[1,0],[2,0],[0,1],[1,1]], [[0,0],[1,0],[1,1],[2,1]]
 ];
 let bgrid=[],bpieces=[],bselected=-1,bscore=0,bturn=0,bRescueUsed=false,bcombo=0,bBestCombo=0,bNoClear=0,bdragging=false,bdragMoved=false,bdragStart=null,bpreview=null;
 const bPops=[];
-let bTime=0,bBest=0,bHints=1,bSwaps=1,bHintTarget=null,bPressure=0,bPressureMsg=false;
+let bTime=0,bBest=0,bHints=1,bSwaps=1,bShapeJokers=1,bHintTarget=null,bPressure=0,bPressureMsg=false,bSkin=0,bJokerPicker=false;
 // Mejor puntaje previo de este perfil en Bloques (para el reto "a punto de superar el récord").
 function bBestScore(){try{const list=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');return list.filter(v=>v&&v.mode==='Bloques'&&(!profile||v.profileId===profile.id)).reduce((m,v)=>Math.max(m,Number(v.score)||0),0);}catch(e){return 0;}}
-const B_START=[0,0,8,16];// botones sueltos que ya hay al empezar
+const B_START=[0,0,8];// botones sueltos que ya hay al empezar
 function bNew(){bgrid=Array.from({length:BC},()=>Array(BC).fill(-1));for(let k=0;k<B_START[dIdx()];k++){let t=0,x,y;do{x=ri(BC);y=ri(BC);t++;}while(t<40&&bgrid[y][x]!==-1);bgrid[y][x]=ri(7);}bselected=-1;bscore=0;bturn=0;bRescueUsed=false;bcombo=0;bBestCombo=0;bNoClear=0;bdragging=false;bdragMoved=false;bdragStart=null;bpreview=null;bPops.length=0;
- bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bHintTarget=null;bPressure=0;bPressureMsg=false;
+ bTime=0;bBest=bBestScore();bHints=1;bSwaps=1;bShapeJokers=1;bHintTarget=null;bPressure=0;bPressureMsg=false;bSkin=0;bJokerPicker=false;
  score=0;rescued=0;stone=0;armed=false;proj=null;falling=[];parts=[];floats=[];jumpers=[];clearTimeout(endTimer);endTimer=null;bpieces=bDeal();
  say('Coraline',bBest>0?'Tu récord es '+bBest.toLocaleString('es-CL')+'. ¡Vamos a superarlo!':'Arrastra los botones al tablero. Completa líneas y encadena combos.',3600);}
 // ---------- Dificultad dinámica ----------
 // La presión sube con el tiempo de juego (desde 1 min) y al acercarse al récord personal.
 function bUpdatePressure(){const timeP=clamp01((bTime/1000-60)/240),recP=bBest>0?clamp01((bscore-.6*bBest)/(.4*bBest)):0;bPressure=Math.max(timeP,recP);
  if(bPressure>.5&&!bPressureMsg){bPressureMsg=true;say('Gato Negro','El tablero se pone difícil… piensa bien dónde va cada botón.',3200);}}
-const B_EASY=[[6,6,5,2,2,2,1,1,1,5,1],[5,5,5,2,2,2,2,1,1,4,1],[3,3,3,3,3,3,2,2,2,2,2],[2,2,2,3,3,3,4,4,4,2,4]];
-const B_HARD=[1,1,1,2,2,2,5,5,6,1,5];
-function bPiece(){const base=B_EASY[dIdx()],w=base.map((v,i)=>v*(1-bPressure)+B_HARD[i]*bPressure);
+const B_EASY=[[7,6,6,3,4,2,2,5,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,2,2],[5,5,5,3,3,2,2,3,3,3,3,3,3,2,2,2,2,2,1,1,1,1,1,2,2],[3,3,3,3,3,2,2,3,3,3,3,2,2,2,2,2,2,1,1,1,1,1,1,1,1]];
+const B_HARD=[1,1,1,1,2,2,2,2,3,3,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5];
+function bNormalizeCells(cells){const mx=Math.min(...cells.map(c=>c[0])),my=Math.min(...cells.map(c=>c[1]));return cells.map(([x,y])=>[x-mx,y-my]);}
+function bPiece(){const base=B_EASY[dIdx()],hard=B_HARD.map(v=>v*(dIdx()===0?.65:dIdx()===1?.85:1)),w=base.map((v,i)=>v*(1-bPressure)+hard[i]*bPressure);
  let roll=Math.random()*w.reduce((a,b)=>a+b,0),idx=0;for(;idx<w.length-1;idx++){roll-=w[idx];if(roll<=0)break;}
- return{cells:BSHAPES[idx].map(p=>p.slice()),color:ri(7)};}
+ return{cells:bNormalizeCells(BSHAPES[idx]),color:ri(7)};}
 function bCanOn(g,piece,x,y){return piece.cells.every(([dx,dy])=>x+dx>=0&&x+dx<BC&&y+dy>=0&&y+dy<BC&&g[y+dy][x+dx]===-1);}
 function bHasMoveOn(g,p){if(!p)return false;for(let y=0;y<BC;y++)for(let x=0;x<BC;x++)if(bCanOn(g,p,x,y))return true;return false;}
 function bFullLines(g){const rows=[],cols=[];for(let r=0;r<BC;r++)if(g[r].every(v=>v!==-1))rows.push(r);for(let c=0;c<BC;c++)if(g.every(row=>row[c]!==-1))cols.push(c);return{rows,cols};}
 function bApply(g,p,x,y){const h=g.map(r=>r.slice());p.cells.forEach(([dx,dy])=>h[y+dy][x+dx]=p.color);const {rows,cols}=bFullLines(h);rows.forEach(r=>{for(let c=0;c<BC;c++)h[r][c]=-1;});cols.forEach(c=>{for(let r=0;r<BC;r++)h[r][c]=-1;});return h;}
 // ¿Se pueden colocar las tres piezas (en algún orden)? Garantiza que una mano difícil nunca sea imposible.
-function bSolvable(deal){let nodes=0;
- function dfs(g,rem){if(!rem.length)return true;if(++nodes>5000)return true;
-  for(let i=0;i<rem.length;i++){const p=rem[i],rest=rem.filter((_,j)=>j!==i);
-   for(let y=0;y<BC;y++)for(let x=0;x<BC;x++){if(!bCanOn(g,p,x,y))continue;if(dfs(bApply(g,p,x,y),rest))return true;}}
+function bSolvable(deal){let nodes=0,exhausted=false;
+ function dfs(g,rem){if(exhausted)return false;if(!rem.length)return true;if(++nodes>12000){exhausted=true;return false;}
+  for(let i=0;i<rem.length&&!exhausted;i++){const p=rem[i],rest=rem.filter((_,j)=>j!==i);
+   for(let y=0;y<BC&&!exhausted;y++)for(let x=0;x<BC&&!exhausted;x++){if(!bCanOn(g,p,x,y))continue;if(dfs(bApply(g,p,x,y),rest))return true;}}
   return false;}
  return dfs(bgrid,deal);}
 function bTightness(deal){let n=0;deal.forEach(p=>{for(let y=0;y<BC;y++)for(let x=0;x<BC;x++)if(bCanOn(bgrid,p,x,y))n++;});return n;}
 function bDeal(){bUpdatePressure();let deal=[];
- if(bPressure>.25){let best=null,bt=1e9,first=null;
-  for(let t=0;t<12;t++){const d=[bPiece(),bPiece(),bPiece()];if(!d.some(p=>bHasMoveOn(bgrid,p))||!bSolvable(d))continue;if(!first)first=d;const k=bTightness(d);if(k<bt){bt=k;best=d;}}
-  if(first)return Math.random()<.3+bPressure*.7?best:first;}
- for(let tries=0;tries<24;tries++){deal=[bPiece(),bPiece(),bPiece()];if(deal.some(p=>bHasMoveOn(bgrid,p)))return deal;}
- // Respaldo justo: si el tablero está casi bloqueado, al menos una pieza cabe siempre que exista una casilla vacía.
- if(bgrid.some(row=>row.some(v=>v===-1)))deal[0]={cells:[[0,0]],color:ri(7)};
+ for(let tries=0;tries<60;tries++){deal=[bPiece(),bPiece(),bPiece()];if(!deal.every(p=>bHasMoveOn(bgrid,p)))continue;if(!bSolvable(deal))continue;return deal;}
+ // Respaldo: el DFS intenta comprobar tres piezas unitarias. Si el tablero está demasiado apretado, no se afirma que el trato sea solvable.
+ const singles=[0,1,2].map(()=>({cells:[[0,0]],color:ri(7)}));if(bSolvable(singles))return singles;if(bgrid.some(row=>row.some(v=>v===-1)))return [singles[0],null,null];
  return deal;}
 function bCan(piece,x,y){return bCanOn(bgrid,piece,x,y);}
 function bHasMove(p){return bHasMoveOn(bgrid,p);}
@@ -63,14 +66,14 @@ function bPlace(piece,x,y){
   bPops.push({big:multiplier>1?'COMBO x'+multiplier:(lines>1?lines+' LÍNEAS':'¡LÍNEA!'),sub:(multiplier>1&&lines>1?lines+' líneas · ':'')+'+'+gained.toLocaleString('es-CL'),life:70,max:70,hot:multiplier>=4});
   say('Coraline',bcombo>=3?'¡Eso fue increíble! ¡Sigue el combo!':'¡Línea despejada! ¡Buen trabajo!',1800);
   SFX.pop(Math.min(4,lines));
-  if(bgrid.every(r=>r.every(v=>v===-1))){bscore+=800;floats.push({x:240,y:380,txt:'¡TABLERO LIMPIO! +800',c:'#8fe9c9',life:90});}
+  if(bgrid.every(r=>r.every(v=>v===-1))){bscore+=800;bSkin=(bSkin+1)%4;floats.push({x:240,y:380,txt:'¡TABLERO LIMPIO! +800 · NUEVO DISEÑO',c:'#8fe9c9',life:110});say('Coraline','¡Has vaciado el tablero! Los botones brillan con un nuevo diseño.',3200);}
   if(bcombo%4===0){bHints++;say('Gato Negro','¡Racha x'+bcombo+'! Ganaste otra 💡 pista.',2600);}
  }else{bNoClear++;if(bNoClear>=3&&bcombo>0){bcombo=0;bNoClear=0;say('Gato Negro','Se acabó la racha… ¡empieza otra!',1600);}}
  bpieces[bselected]=null;bselected=-1;bdragging=false;bpreview=null;bHintTarget=null;bturn++;score=bscore;bUpdatePressure();
  if(bpieces.every(p=>!p))bpieces=bDeal();
  if(bpieces.filter(Boolean).every(p=>!bHasMove(p))){
   const empty=bgrid.some(row=>row.some(v=>v===-1));
-  if(empty&&!bRescueUsed&&diff!=='experto'){
+  if(empty&&!bRescueUsed&&true){
    const slot=bpieces.findIndex(p=>!p||!bHasMove(p));bpieces[slot]={cells:[[0,0]],color:ri(7)};bRescueUsed=true;
    say('Gato Negro','¡Todavía hay una salida! Te guardé una pieza pequeña.',3000);
   }else{lose();}
@@ -119,6 +122,9 @@ function bUseSwap(){if(state!=='play'||mode!=='blocks')return;
  const nd=bDeal();bpieces=bpieces.map((p,i)=>p?nd[i]:null);bSwaps--;bscore-=cost;score=bscore;bselected=-1;bdragging=false;bpreview=null;bHintTarget=null;
  floats.push({x:438,y:120,txt:'−'+cost,c:'#ff8eae',life:60});SFX.bounce();say('Gato Negro','¡Botones nuevos! Úsalos con cabeza.',2600);}
 
+const B_JOKER_CATALOG=[0,1,2,4,5,6,7,9,11,15,16,21,22,23,24];
+function bUseShapeJoker(){if(state!=='play'||mode!=='blocks')return;if(bShapeJokers<=0){say('Gato Negro','El comodín de forma ya se usó en esta partida.',2200);return;}if(bselected<0||!bpieces[bselected]){say('Gato Negro','Primero selecciona una pieza que quieras sustituir.',2200);return;}const cost=Math.max(250,Math.round(bscore*.18/10)*10);if(bscore<cost){say('Gato Negro','Necesitas '+cost+' puntos para usar el comodín de forma.',2200);return;}bJokerPicker=true;}
+function bChooseShape(i){if(!bJokerPicker||!bpieces[bselected])return;const cost=Math.max(250,Math.round(bscore*.18/10)*10),shape=BSHAPES[B_JOKER_CATALOG[i]];if(!shape)return;if(bscore<cost){bJokerPicker=false;return;}bscore-=cost;score=bscore;bpieces[bselected]={cells:bNormalizeCells(shape),color:ri(7)};bShapeJokers--;bJokerPicker=false;bHintTarget=null;bselected=-1;SFX.ready();say('Gato Negro','Pieza cambiada. ¡Que sea una jugada decisiva!',2400);}
 function bCircleBtn(x,y,label,id,uses,cost,ok){ctx.save();const g=ok?.5+.5*Math.sin(tick*.08):0;ctx.shadowColor='#ffd166';ctx.shadowBlur=ok?10+8*g:0;ctx.fillStyle=ok?'#3a1d62':'#1a0f28';ctx.beginPath();ctx.arc(x,y,22,0,TAU);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=ok?'#ffd166':'#5a4a70';ctx.lineWidth=3;ctx.stroke();ctx.globalAlpha=ok?1:.45;txt(label,x,y+8,'22px sans-serif','#fff');ctx.globalAlpha=1;
  ctx.fillStyle=uses>0?'#06d6a0':'#ff5d8f';ctx.beginPath();ctx.arc(x+17,y-17,10,0,TAU);ctx.fill();txt(String(uses),x+17,y-13,'900 13px Quicksand,sans-serif','#07050e');
  txt('−'+cost,x,y+38,'800 12px Quicksand,sans-serif',ok?'#ffd166':'#8d78a8');ctx.restore();hits.push({x:x-26,y:y-26,w:52,h:52,id});}
@@ -127,11 +133,11 @@ function drawBlocks(){
  drawSky();bUpdatePressure();
  ctx.fillStyle='rgba(10,5,20,.94)';ctx.fillRect(0,0,W,TOP);
  txt('✦ EL TABLERO DE CORALINE ✦',240,27,'700 18px Quicksand,sans-serif','#ffd166');
- if(bcombo>0)txt('🔥 COMBO x'+Math.min(8,1+bcombo)+' · racha '+bcombo+' · quedan '+(3-bNoClear)+' jugadas',240,49,'900 14px Quicksand,sans-serif','#ffd166');else txt('BOTONES ENCANTADOS',240,49,'700 10px Quicksand,sans-serif','#cdb6ea');
+ if(bcombo>0)txt('🔥 COMBO x'+Math.min(8,1+bcombo)+' · racha '+bcombo+' · quedan '+(3-bNoClear)+' jugadas',240,49,'900 14px Quicksand,sans-serif','#ffd166');else txt('BOTONES ENCANTADOS · DISEÑO '+(bSkin+1),240,49,'700 10px Quicksand,sans-serif','#cdb6ea');
  ctx.save();ctx.shadowColor='#06d6a0';ctx.shadowBlur=14;ctx.fillStyle='rgba(20,12,36,.96)';rr(120,60,240,35,17);ctx.fill();ctx.strokeStyle='#06d6a0';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();
  txt('✧ '+bscore.toLocaleString('es-CL')+' PUNTOS ✧',240,83,'900 19px Quicksand,sans-serif','#fff');
  ctx.fillStyle='#2a1346';rr(8,62,108,30,14);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=1.5;ctx.stroke();txt(blocksStyle==='square'?'Cuadrado':'Redondo',62,82,'700 11px Quicksand,sans-serif','#fff');hits.push({x:8,y:62,w:108,h:30,id:'bstyle'});
- const cost=bCost();bCircleBtn(386,72,'💡','bLamp',bHints,cost,bHints>0&&bscore>=cost);bCircleBtn(436,72,'🔄','bSwap',bSwaps,cost,bSwaps>0&&bscore>=cost);
+ const cost=bCost();bCircleBtn(336,72,'💡','bLamp',bHints,cost,bHints>0&&bscore>=cost);bCircleBtn(386,72,'🔄','bSwap',bSwaps,cost,bSwaps>0&&bscore>=cost);const jcost=Math.max(250,Math.round(bscore*.18/10)*10);bCircleBtn(436,72,'🧩','bShape',bShapeJokers,jcost,bShapeJokers>0&&bselected>=0&&bscore>=jcost);
  if(bPressure>.05){ctx.fillStyle='#1a1228';rr(8,95,108,4,2);ctx.fill();ctx.fillStyle=bPressure>.66?'#ff5d8f':bPressure>.33?'#ff9f43':'#ffd166';rr(8,95,108*bPressure,4,2);ctx.fill();}
  ctx.save();ctx.shadowColor='#9b5de5';ctx.shadowBlur=18;ctx.fillStyle='rgba(24,12,42,.95)';rr(BX-7,BY-7,BC*BS+14,BC*BS+14,15);ctx.fill();ctx.strokeStyle='#9b5de5';ctx.lineWidth=2;ctx.stroke();ctx.restore();
  const sq=blocksStyle==='square'?2:7;
@@ -140,7 +146,7 @@ function drawBlocks(){
   ctx.fillStyle=v>=0?'rgba(40,24,58,.96)':'rgba(174,145,205,.24)';rr(x+2,y+2,BS-4,BS-4,sq);ctx.fill();
   ctx.strokeStyle=v>=0?'rgba(255,255,255,.28)':'rgba(235,218,255,.68)';ctx.lineWidth=v>=0?1.2:1.5;ctx.stroke();
   if(v<0){ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.arc(x+BS/2,y+BS/2,2,0,TAU);ctx.fill();}
-  if(v>=0)bDrawButtonCell(x+BS/2,y+BS/2,v,1,.84);
+  if(v>=0)bDrawButtonCell(x+BS/2,y+BS/2,(v+bSkin*2)%7,1,.84);
  }
  // Pista 💡: brillo dorado donde encaja mejor.
  if(bHintTarget&&bpieces[bHintTarget.i]){const hp=bpieces[bHintTarget.i],pulse=.55+.45*Math.sin(tick*.12);
@@ -172,6 +178,7 @@ function drawBlocks(){
   ctx.save();ctx.shadowColor='#ffffff';ctx.shadowBlur=10;p.cells.forEach(c=>{const [x,y]=pos2(c);bDrawButtonCell(x,y,p.color,1,.94*B_SCALE);});ctx.restore();
   if(bdragging&&lastPtr==='touch'){ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.beginPath();ctx.moveTo(mouseX,mouseY-14);ctx.lineTo(f.cx,f.cy+f.ph*B_SCALE/2+4);ctx.stroke();ctx.setLineDash([]);
    ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.arc(mouseX,mouseY,9,0,TAU);ctx.fill();}}
+ if(bJokerPicker){ctx.save();ctx.fillStyle='rgba(5,3,12,.88)';rr(18,420,444,260,18);ctx.fill();ctx.strokeStyle='#ffd166';ctx.lineWidth=2.5;rr(18,420,444,260,18);ctx.stroke();txt('ELIGE UNA PIEZA · 🧩 COMODÍN',240,446,'900 15px Quicksand,sans-serif','#ffd166');B_JOKER_CATALOG.forEach((si,i)=>{const col=i%5,row=Math.floor(i/5),x=38+col*83,y=464+row*66;const p=bNormalizeCells(BSHAPES[si]),bb=bPieceBounds({cells:p}),sz=Math.min(14,48/bb.w,38/bb.h),ox=x+(54-bb.w*sz)/2,oy=y+(46-bb.h*sz)/2;p.forEach(([dx,dy])=>bDrawButtonCell(ox+(dx+.5)*sz,oy+(dy+.5)*sz,i%7,1,.8));hits.push({x,y,w:54,h:48,id:'bj'+i});});txt('Costo '+Math.max(250,Math.round(bscore*.18/10)*10)+' puntos · toca una figura para sustituir',240,658,'600 11px Quicksand,sans-serif','#e9c6ff');hits.push({x:390,y:635,w:64,h:32,id:'bjcancel'});txt('Cancelar',422,655,'700 10px Quicksand,sans-serif','#fff');ctx.restore();}
  // Carteles grandes de combo: aparecen con rebote en el centro del tablero.
  for(let i=bPops.length-1;i>=0;i--){const q=bPops[i];q.life--;if(q.life<=0){bPops.splice(i,1);continue;}
   const age=q.max-q.life,sc=age<10?.4+age*.085:1+.04*Math.sin(age*.5),al=Math.min(1,q.life/18);

@@ -11,13 +11,12 @@ const fogs=Array.from({length:6},(_,i)=>({x:rnd(0,W),y:380+i*55,r:rnd(110,180),s
 // sv = intervalo de paso de Snake (ms), ramp = cuánto acelera Tetris por nivel (ms).
 const DIFF={
  facil:{n:'Fácil',ammo:34,colors:4,rows:3,t:1300,garb:3,rise:0,sv:280,ramp:30},
- normal:{n:'Normal',ammo:30,colors:4,rows:4,t:900,garb:4,rise:0,sv:180,ramp:55},
- dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55},
- experto:{n:'Experto',ammo:20,colors:5,rows:6,t:420,garb:8,rise:10,sv:85,ramp:55}};
-const DIFF_KEYS=['facil','normal','dificil','experto'];
+ normal:{n:'Medio',ammo:30,colors:4,rows:4,t:900,garb:4,rise:0,sv:180,ramp:55},
+ dificil:{n:'Difícil',ammo:25,colors:5,rows:5,t:650,garb:6,rise:18,sv:125,ramp:55}};
+const DIFF_KEYS=['facil','normal','dificil'];
 function dIdx(){return Math.max(0,DIFF_KEYS.indexOf(diff));}
 // Migración única de la preferencia guardada (los nombres cambiaron de significado en v0.8.0).
-try{if(localStorage.getItem('cor_diff_v2')!=='1'){const old=localStorage.getItem('cor_diff');const map={facil:'normal',normal:'dificil',dificil:'experto'};if(map[old])localStorage.setItem('cor_diff',map[old]);localStorage.setItem('cor_diff_v2','1');}}catch(e){}
+try{if(localStorage.getItem('cor_diff_v3')!=='1'){const old=localStorage.getItem('cor_diff');if(old==='experto')localStorage.setItem('cor_diff','dificil');if(!['facil','normal','dificil'].includes(localStorage.getItem('cor_diff')))localStorage.setItem('cor_diff','normal');localStorage.setItem('cor_diff_v3','1');}}catch(e){}
 try{const m=localStorage.getItem('cor_mode'),d=localStorage.getItem('cor_diff');if(['tetris','bubble','blocks','snake','kong','runner','runner3d','fruit'].includes(m))mode=m;if(DIFF[d])diff=d;}catch(e){}
 function saveSel(){try{localStorage.setItem('cor_mode',mode);localStorage.setItem('cor_diff',diff);}catch(e){}}
 let blocksStyle='rounded',profile=null,snakeWrap=false,snakeCtl='',tetrisMode='rescue',bubbleMode='levels',bubbleLevel=1,bMice=6;
@@ -37,9 +36,9 @@ function isCarolinaProfile(){const id=carolinaId();return !!(profile&&id&&profil
 function applyProfile(p){profile=p;if(!profile.preferences)profile.preferences={blocksStyle:'rounded'};if(!profile.greetings)profile.greetings={generalPlayed:false,carolinaDoorPlayed:false};const pf=profile.preferences;blocksStyle=pf.blocksStyle==='square'?'square':'rounded';snakeWrap=!!pf.snakeWrap;tetrisMode=pf.tetrisMode==='classic'?'classic':'rescue';bubbleMode=(pf.bubbleMode==='endless'||pf.bubbleMode==='rescue')?'endless':'levels';snakeCtl=pf.snakeCtl==='swipe'?'swipe':'';}
 function migrateScores(){const flag='coraline_scores_migrated_v1';try{if(localStorage.getItem(flag)==='1')return;let list=[];try{list=JSON.parse(localStorage.getItem('coraline_scores')||'[]');}catch(e){list=[];}if(!Array.isArray(list))list=[];let v2=[];try{v2=JSON.parse(localStorage.getItem('coraline_scores_v2')||'[]');}catch(e){v2=[];}if(!Array.isArray(v2))v2=[];const key=s=>[s.profileId,s.name,s.score,s.mode,s.date].join('|');const seen=new Set(v2.map(key));list.forEach(v=>{if(!v||typeof v!=='object')return;const row={profileId:LEGACY_PROFILE_ID,name:String(v.name||'Jugador').slice(0,18),score:Number(v.score)||0,mode:String(v.mode||'Burbujas'),date:String(v.date||'')};const k=key(row);if(!seen.has(k)){v2.push(row);seen.add(k);}});localStorage.setItem('coraline_scores_v2',JSON.stringify(v2));localStorage.setItem(flag,'1');}catch(e){}}
 function bootProfile(){migrateScores();try{const saved=localStorage.getItem('cor_blocks_style');if(saved==='square'||saved==='rounded')blocksStyle=saved;snakeWrap=localStorage.getItem('cor_snake_wrap')==='1';tetrisMode=localStorage.getItem('cor_tetris_mode')==='classic'?'classic':'rescue';{const bm=localStorage.getItem('cor_bubble_mode');bubbleMode=(bm==='endless'||bm==='rescue')?'endless':'levels';}const id=localStorage.getItem('coraline_profile');const found=loadProfiles().find(p=>p.id===id);if(found)applyProfile(found);}catch(e){}}
-function renderProfiles(){const box=document.getElementById('profile-list');const list=loadProfiles();box.innerHTML=list.map(p=>'<button type="button" class="'+(profile&&profile.id===p.id?'on':'')+'" data-id="'+p.id+'">'+esc(p.nickname||'Jugador')+(profile&&profile.id===p.id?' · actual':'')+'</button>').join('')||'<p>Crea tu primer perfil.</p>';box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const next=loadProfiles().find(p=>p.id===b.dataset.id);if(!next)return;applyProfile(next);persistProfile();document.getElementById('profiles').style.display='none';playGeneralGreeting();});}
+function renderProfiles(){const box=document.getElementById('profile-list');const list=loadProfiles();box.innerHTML=list.map(p=>'<button type="button" class="'+(profile&&profile.id===p.id?'on':'')+'" data-id="'+p.id+'">'+esc(p.nickname||'Jugador')+(profile&&profile.id===p.id?' · actual':'')+'</button>').join('')||'<p>Crea tu primer perfil.</p>';box.querySelectorAll('button').forEach(b=>b.onclick=()=>{const next=loadProfiles().find(p=>p.id===b.dataset.id);if(!next)return;applyProfile(next);persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profiles').style.display='none';playGeneralGreeting();});}
 function openProfiles(){renderProfiles();document.getElementById('profiles').style.display='block';}
-function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18)||'Jugador';if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
+function createNamedProfile(){const nick=(document.getElementById('profile-name').value||'').trim().slice(0,18)||'Jugador';if(profile)persistProfile();applyProfile(makeProfile(nick));persistProfile();if(typeof mouseLoad==='function')mouseLoad();document.getElementById('profile-name').value='';document.getElementById('profiles').style.display='none';playGeneralGreeting();}
 bootProfile();
 document.getElementById('profile-create').onclick=createNamedProfile;
 document.getElementById('profile-close').onclick=()=>{if(!profile)return;document.getElementById('profiles').style.display='none';};
@@ -80,5 +79,5 @@ function syncLauncher(){const present=colorsPresent();if(!present.size)return;if
 function startPlay(){if(mode==='bubble'&&bubbleMode==='levels'&&bubbleLevel>=3){try{if(!localStorage.getItem('cor_legend_seen'))setTimeout(openLegend,400);}catch(e){}}
  scoreRecorded=false;unlock();kKeys={};kTouch.l=kTouch.r=kTouch.j=kTouch.c=0;kHold.clear();if(mode==='kong')kNew();else if(mode==='runner')rNew();else if(mode==='runner3d')pNew();else if(mode==='tetris')tNew();else if(mode==='blocks')bNew();else if(mode==='snake')sNew();else if(mode==='fruit')fNew();else newGame();state='play';fade=1;setMusic('partida');setPowerBtns(true);updateStoneBtn();}
 function setPowerBtns(on){const showStone=on&&(mode==='bubble'||(mode==='tetris'&&tetrisMode==='rescue'));stoneBtn.style.display=showStone?'block':'none';bombBtn.style.display=(on&&mode==='bubble')?'block':'none';}
-function toMenu(){state='menu';setPowerBtns(false);setMusic('intro');}
+function toMenu(){state='menu';setPowerBtns(false);setMusic('intro');if(typeof refreshHomeRecords==='function')refreshHomeRecords();}
 

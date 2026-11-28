@@ -1,5 +1,5 @@
 /* ================= BUCLE ================= */
-function update(){tick++;if(state==='play'&&mode==='blocks')bTime+=16.7;if(banner.t>0)banner.t-=16.7;if(state==='play'&&mode==='kong')kUpdate();else if(state==='play'&&mode==='runner')rUpdate();else if(state==='play'&&mode==='runner3d')pUpdate();else if(state==='play'&&mode==='tetris')tUpdate();else if(state==='play'&&mode==='snake')sUpdate();else if(state==='play'&&mode==='fruit')fUpdate();
+function update(){tick++;if(state==='mousehub')mouseBattleUpdate();if(state==='play'&&mode==='blocks')bTime+=16.7;if(banner.t>0)banner.t-=16.7;if(state==='play'&&mode==='kong')kUpdate();else if(state==='play'&&mode==='runner')rUpdate();else if(state==='play'&&mode==='runner3d')pUpdate();else if(state==='play'&&mode==='tetris')tUpdate();else if(state==='play'&&mode==='snake')sUpdate();else if(state==='play'&&mode==='fruit')fUpdate();
  if(scrollOff>0){scrollOff*=.92;if(scrollOff<1)scrollOff=0;}
  if(state==='play'||state==='win'||state==='lose'){stepProj();
   parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.life--;});parts=parts.filter(p=>p.life>0);
@@ -9,7 +9,7 @@ function update(){tick++;if(state==='play'&&mode==='blocks')bTime+=16.7;if(banne
 function frame(){try{update();hits.length=0;ctx.clearRect(0,0,W,H);
  if(state==='splash'||state==='menu'){drawMenu();
  if(state==='splash'){hits.length=0;ctx.fillStyle='rgba(7,5,14,.72)';ctx.fillRect(0,0,W,H);ctx.globalAlpha=.6+.4*Math.sin(tick*.06);txt('Toca para entrar al Otro Mundo',240,400,'700 20px "Cinzel Decorative",Georgia,serif','#ffd166');ctx.globalAlpha=1;txt('🔊 con sonido',240,432,'500 14px Quicksand,sans-serif','#b79cd6');}}
- else if(state==='select')drawSelect();
+ else if(state==='select')drawSelect();else if(state==='mousehub')drawMouseHub();
  else if(state==='map')drawLevelMap();
  else{(mode==='kong'?drawKong:mode==='runner'?drawRunner:mode==='runner3d'?drawPepsi:mode==='tetris'?drawTetris:mode==='blocks'?drawBlocks:mode==='snake'?drawSnake:mode==='fruit'?drawFruta:drawPlay)();
   if(state==='play')drawMother(motherDanger());
